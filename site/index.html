@@ -12,14 +12,23 @@
 <meta name="theme-color" content="#f6f3ec">
 <link rel="canonical" href="https://www.aiskillscafe.com/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=2">
+<link rel="stylesheet" href="/style.css?v=4">
 </head>
 <body class="home">
 <main>
   <section class="welcome">
-    <h1 class="tagline">Be in the company of <em>Great Thinkers</em></h1>
+    <h1 class="tagline">
+      <span class="sr-only">Be in the company of Great Thinkers</span>
+      <svg class="arch" viewBox="0 0 600 185" aria-hidden="true">
+        <path id="arch-outer" d="M 20 102.7 A 940 940 0 0 1 580 102.7" fill="none"/>
+        <path id="arch-inner" d="M 60 161.7 A 872 872 0 0 1 540 161.7" fill="none"/>
+        <text class="arch-top"><textPath href="#arch-outer" startOffset="50%" text-anchor="middle">Be in the company of</textPath></text>
+        <text class="arch-em"><textPath href="#arch-inner" startOffset="50%" text-anchor="middle">Great Thinkers</textPath></text>
+      </svg>
+    </h1>
 
     <div class="orbit-stage" id="orbit-stage">
+      <svg class="track back" aria-hidden="true"><path id="track-back"/></svg>
       <svg class="cup" viewBox="0 0 240 240" role="img" aria-label="A steaming coffee cup printed with AI Skills Café">
         <defs>
           <linearGradient id="cupFill" x1="0" y1="0" x2="1" y2="1">
@@ -45,6 +54,7 @@
         <text x="120" y="138" class="cup-text cup-small">AI Skills</text>
         <text x="120" y="172" class="cup-text">Café</text>
       </svg>
+      <svg class="track front" aria-hidden="true"><path id="track-front"/></svg>
       <div class="orbit" id="orbit" aria-label="Some of the sources on our menu"></div>
     </div>
     <p class="cup-caption">Free skills &amp; tools for every AI agent</p>
@@ -88,7 +98,7 @@
     <a data-donate href="#" target="_blank" rel="noopener">Support the Café</a>
   </nav>
 </footer>
-<script src="/config.js?v=2"></script>
-<script src="/home.js?v=2"></script>
+<script src="/config.js?v=4"></script>
+<script src="/home.js?v=4"></script>
 </body>
 </html>

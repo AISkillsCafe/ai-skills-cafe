@@ -26,12 +26,50 @@ function drawOrbit(sources) {
   const pool = sources.filter((s) => s.tier !== "official" && AVATAR.test(s.avatar || ""));
   const picked = shuffle(pool).slice(0, many);
   const orbit = $("#orbit");
-  orbit.style.setProperty("--n", picked.length);
-  orbit.innerHTML = picked.map((s, i) => `
-    <a class="sat" style="--i:${i}" href="/menu?source=${encodeURIComponent(s.repo)}" title="${esc(s.repo)} — ${s.skills} skill${s.skills === 1 ? "" : "s"}">
-      <span class="sat-in"><img src="${esc(s.avatar)}&s=96" alt="" width="54" height="54" loading="lazy"><small>${esc(s.owner)}</small></span>
+  orbit.innerHTML = picked.map((s) => `
+    <a class="sat" href="/menu?source=${encodeURIComponent(s.repo)}" title="${esc(s.repo)} — ${s.skills} skill${s.skills === 1 ? "" : "s"}">
+      <img src="${esc(s.avatar)}&s=96" alt="" width="54" height="54" loading="lazy"><small>${esc(s.owner)}</small>
     </a>`).join("");
   $("#orbit-note").textContent = `Circling the cup are ${picked.length} of the ${pool.length} people and teams whose skills are on our menu — a new mix every visit. Tap one to see their skills.`;
+  spin($("#orbit-stage"), [...orbit.children]);
+}
+
+/* A tilted orbit: pictures swing in front of the cup (bigger, brighter) and behind it (smaller, dimmer). */
+function spin(stage, sats) {
+  const PERIOD = 70000;                                // ms per lap
+  const still = matchMedia("(prefers-reduced-motion: reduce)");
+  const back = $("#track-back"), front = $("#track-front");
+  let angle = 0, last = performance.now(), paused = false;
+  const hold = (v) => () => (paused = v);
+  stage.addEventListener("pointerenter", hold(true));
+  stage.addEventListener("pointerleave", hold(false));
+  stage.addEventListener("focusin", hold(true));
+  stage.addEventListener("focusout", hold(false));
+
+  function place() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const cx = w / 2, cy = h * 0.55, rx = w / 2 - (w < 480 ? 30 : 46), ry = rx * 0.5;
+    const arc = (sweep) => `M ${cx - rx} ${cy} A ${rx} ${ry} 0 0 ${sweep} ${cx + rx} ${cy}`;
+    back.setAttribute("d", arc(1)); front.setAttribute("d", arc(0));
+    sats.forEach((el, i) => {
+      const t = angle + (i * 2 * Math.PI) / sats.length;
+      const depth = Math.sin(t);                        // -1 = far side, 1 = nearest
+      const near = (depth + 1) / 2;
+      const x = cx + rx * Math.cos(t), y = cy + ry * depth;
+      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${(0.62 + 0.46 * near).toFixed(3)})`;
+      el.style.opacity = (0.4 + 0.6 * near).toFixed(2);
+      el.style.zIndex = depth > 0 ? 4 : 1;              // the cup sits at 2, the front of the track at 3
+      el.classList.toggle("far", depth < -0.3);
+    });
+  }
+  function frame(now) {
+    if (!paused && !still.matches) angle = (angle + ((now - last) / PERIOD) * 2 * Math.PI) % (2 * Math.PI);
+    last = now;
+    place();
+    requestAnimationFrame(frame);
+  }
+  angle = Math.PI / 2 - Math.PI / sats.length;          // start with a picture front and centre
+  requestAnimationFrame(frame);
 }
 
 function drawSpecials(skills) {

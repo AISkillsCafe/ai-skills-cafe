@@ -88,7 +88,7 @@ function renderMode() {
   $("#q").placeholder = HERO[mode][1];
   $("#stats").textContent = isTools
     ? (n ? `${n} tools · picked from ${(lib.registry_entries || 0).toLocaleString()} in the MCP Registry · refreshed nightly, last ${fmtDate(lib.tools_updated_at)}` : "No tools yet")
-    : (n ? `${n} skills · ${lib.sources.length} sources · refreshed nightly, last ${fmtDate(lib.updated_at)}` : "No skills yet");
+    : (n ? `${n} skills · ${lib.tools.length} tools · ${lib.sources.length} sources · refreshed nightly, last ${fmtDate(lib.updated_at)}` : "No skills yet");
   const newCount = items().filter((s) => s.is_new).length;
   $("#f-new").hidden = !newCount;
   $("#new-count").textContent = newCount || "";
