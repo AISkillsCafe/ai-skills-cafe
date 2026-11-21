@@ -5,5 +5,5 @@ window.CAFE = {
   donateUrl: "",
   // The GitHub repository for this site, e.g. "https://github.com/yourname/ai-skills-cafe"
   // (used for the "Request removal" form)
-  repoUrl: "",
+  repoUrl: "https://github.com/AISkillsCafe/ai-skills-cafe",
 };
