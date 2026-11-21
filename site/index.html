@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Skills Café — skills and tools for Claude, ChatGPT, Gemini & more</title>
+<meta name="description" content="A free, curated menu of AI agent skills and tools from trusted sources, with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.">
+<meta property="og:title" content="AI Skills Café">
+<meta property="og:description" content="A free, curated menu of AI agent skills and tools, with setup steps for every major AI agent.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f6f3ec">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./">
+    <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M6 12h17v7a7 7 0 0 1-7 7h-3a7 7 0 0 1-7-7z" fill="currentColor"/><path d="M23 14h2.5a3.5 3.5 0 0 1 0 7H23" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M11 3c-1.5 2 1.5 3 0 6M16 3c-1.5 2 1.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></svg>
+    <div><h1>AI Skills Café</h1><p id="stats">Brewing the menu…</p></div>
+  </a>
+  <div class="top-actions">
+    <button id="surprise" class="btn ghost" title="Open a random pick">🎲 Surprise me</button>
+    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="mode" id="mode" role="tablist" aria-label="Menu">
+      <button data-v="skills" class="on" role="tab"><span class="ico">🧠</span><span class="lbl">Skills <b id="n-skills"></b><small>know-how your AI follows</small></span></button>
+      <button data-v="tools" role="tab"><span class="ico">🔌</span><span class="lbl">Tools <b id="n-tools"></b><small>services your AI can act on</small></span></button>
+    </div>
+    <h2 id="hero-title">What do you want your AI to be good at?</h2>
+    <div class="search">
+      <input id="q" type="search" autocomplete="off" aria-label="Search" placeholder="Try “make a slide deck”, “review my code”, “write a launch email”…">
+    </div>
+    <div id="cats" class="chips" role="group" aria-label="Categories"></div>
+  </section>
+
+  <section class="toolbar">
+    <div class="seg skills-only" id="origin" role="group" aria-label="Made for" title="Which agent the skill was written for. Almost every skill works in Gemini CLI, GitHub Copilot, Cursor and other agents too — see each skill’s How to use it tab.">
+      <span class="seg-label">Made for</span>
+      <button data-v="all" class="on">Any agent</button>
+      <button data-v="claude">Claude</button>
+      <button data-v="openai">ChatGPT / Codex</button>
+      <button data-v="cross">Cross-agent</button>
+    </div>
+    <div class="seg" id="tier" role="group" aria-label="Source">
+      <span class="seg-label">Source</span>
+      <button data-v="all" class="on">Any</button>
+      <button data-v="official">Official</button>
+      <button data-v="trusted" class="skills-only">Trusted</button>
+      <button data-v="popular">Popular</button>
+    </div>
+    <div class="toggles">
+      <button class="toggle" id="f-fav" title="Skills and tools you’ve saved in this browser">♥ My shelf <b id="fav-count"></b></button>
+      <button class="toggle" id="f-new" hidden>✦ New <b id="new-count"></b></button>
+      <button class="toggle skills-only" id="f-tests">✓ Has tests</button>
+      <button class="toggle tools-only" id="f-remote" title="Runs online — nothing to install">☁ No install</button>
+      <button class="toggle tools-only" id="f-linked" title="Mentioned by skills on the menu">🔗 Used by skills</button>
+    </div>
+    <div class="right">
+      <select id="sort" aria-label="Sort">
+        <option value="popular">Featured</option>
+        <option value="stars">Most starred</option>
+        <option value="recent">Recently updated</option>
+        <option value="az">A – Z</option>
+        <option value="mine">My rating</option>
+      </select>
+      <div class="seg" id="view" role="group" aria-label="View">
+        <button data-v="cards" class="on">Cards</button>
+        <button data-v="galaxy">Galaxy</button>
+        <button data-v="sources" class="skills-only">Sources</button>
+      </div>
+    </div>
+  </section>
+
+  <p id="count" class="count"></p>
+  <div id="grid" class="grid"></div>
+  <div id="galaxy" class="galaxy" hidden>
+    <svg id="galaxy-svg" role="img" aria-label="Map of items grouped by category"></svg>
+    <div id="tip" class="tip" hidden></div>
+    <p class="legend">Each bubble is a <span class="skills-only">skill</span><span class="tools-only">tool</span>. Colour = category · size = popularity of its source · gold ring = official. Click one to open it.</p>
+  </div>
+  <div id="sources" class="sources" hidden></div>
+  <button id="more" class="btn ghost more" hidden>Show more</button>
+</main>
+
+<footer class="foot">
+  <p><b>AI Skills Café</b> is free for everyone. Skills and tools belong to their authors — we list them, credit them and link to them.</p>
+  <nav>
+    <a href="about.html">About &amp; how we choose</a>
+    <a data-removal href="#" target="_blank" rel="noopener">Request removal</a>
+    <a data-donate href="#" target="_blank" rel="noopener">☕ Support the café</a>
+  </nav>
+  <p class="note">Not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Product names belong to their owners.</p>
+</footer>
+
+<div id="modal" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-name">
+    <button class="close" id="m-close" aria-label="Close">×</button>
+    <div id="m-body"></div>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

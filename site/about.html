@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — AI Skills Café</title>
+<meta name="description" content="How AI Skills Café chooses skills and tools, how licences are handled, and how authors can ask for removal.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./">
+    <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M6 12h17v7a7 7 0 0 1-7 7h-3a7 7 0 0 1-7-7z" fill="currentColor"/><path d="M23 14h2.5a3.5 3.5 0 0 1 0 7H23" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M11 3c-1.5 2 1.5 3 0 6M16 3c-1.5 2 1.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></svg>
+    <div><h1>AI Skills Café</h1><p>About</p></div>
+  </a>
+  <div class="top-actions">
+    <a class="btn ghost" href="./">← Back to the menu</a>
+    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+  </div>
+</header>
+
+<main class="page">
+  <h2>A free menu of AI skills and tools</h2>
+  <p>AI Skills Café helps people find good <b>skills</b> (folders of instructions an AI agent follows, in the open <code>SKILL.md</code> format) and <b>tools</b> (MCP servers that let an agent act on a service like Notion, GitHub or a database), and shows how to set each one up in Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot, Cursor and other agents.</p>
+  <p>It’s free for everyone, with no sign-up. The menu refreshes automatically every night.</p>
+
+  <h3>How we choose</h3>
+  <table>
+    <tr><th>Label</th><th>Skills</th><th>Tools</th></tr>
+    <tr><td><b>Official</b></td><td>Published by the AI company or platform itself (for example Anthropic, OpenAI, Google, Vercel, Firebase).</td><td>Published under a well-known company’s verified domain or GitHub organisation in the official MCP Registry.</td></tr>
+    <tr><td><b>Trusted</b></td><td>Hand-picked, widely used community collections.</td><td>—</td></tr>
+    <tr><td><b>Popular</b></td><td>Found on GitHub with 2,000+ stars, an open-source licence and activity in the last year.</td><td>Community tools whose own GitHub repository has 300+ stars.</td></tr>
+  </table>
+  <p>Star counts belong to the source repository, not to a single skill. Being listed is not an endorsement or a security review — please read what a skill or tool does before using it, and only connect tools you trust.</p>
+
+  <h3>Credit and licences</h3>
+  <p>Every skill and tool belongs to its author. We show the author, link to the original source and display its licence.</p>
+  <ul>
+    <li><b>Openly licensed skills</b> (MIT, Apache 2.0, BSD, ISC, CC BY, GPL and similar): you can read the instructions here and download a copy. Both come straight from the author’s GitHub repository, with the licence kept.</li>
+    <li><b>Everything else</b> (no licence stated, non-commercial, source-available or unclear terms): we show only a short description and send you to the author’s own page.</li>
+  </ul>
+
+  <h3>Your privacy</h3>
+  <p>There are no accounts, cookies or analytics. Your shelf, ratings and notes are saved only in your own browser and never sent to us. Clearing your browser data removes them.</p>
+
+  <h3>For authors: removal or corrections</h3>
+  <p>If you’d like your skill or tool removed, or something about it corrected, <a data-removal href="#" target="_blank" rel="noopener">send a removal request</a> and it will be handled promptly. Removed items stay off the menu.</p>
+
+  <h3>Support the café</h3>
+  <p>The site is run independently and kept free so more people can learn. If it helped you, you can <a data-donate href="#" target="_blank" rel="noopener">buy me a coffee</a> ☕ — thank you!</p>
+
+  <h3>Not affiliated</h3>
+  <p class="note">AI Skills Café is not affiliated with or endorsed by Anthropic, OpenAI, Google, Microsoft, GitHub, Anysphere (Cursor) or any listed author. Product names and trademarks belong to their owners.</p>
+</main>
+
+<footer class="foot">
+  <nav><a href="./">Menu</a><a data-removal href="#" target="_blank" rel="noopener">Request removal</a><a data-donate href="#" target="_blank" rel="noopener">☕ Support the café</a></nav>
+</footer>
+<script src="config.js"></script>
+<script>
+  (function () {
+    var c = window.CAFE || {};
+    document.querySelectorAll("[data-donate]").forEach(function (a) {
+      if (/^https:\/\//.test(c.donateUrl || "")) a.href = c.donateUrl; else a.hidden = true;
+    });
+    document.querySelectorAll("[data-removal]").forEach(function (a) {
+      if (/^https:\/\/github\.com\//.test(c.repoUrl || "")) a.href = c.repoUrl.replace(/\/$/, "") + "/issues/new?template=removal.yml";
+      else a.replaceWith(document.createTextNode(a.textContent));
+    });
+  })();
+</script>
+</body>
+</html>

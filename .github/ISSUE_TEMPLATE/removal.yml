@@ -1,0 +1,39 @@
+name: Removal or correction request
+description: Ask for a skill or tool to be removed from AI Skills Café, or for its details to be corrected.
+title: "[Removal] "
+labels: ["removal-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for getting in touch. Requests from authors are handled promptly.
+        Please don't include private information — this page is public.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What would you like?
+      options:
+        - Remove it from the site
+        - Correct its details
+    validations:
+      required: true
+  - type: input
+    id: item
+    attributes:
+      label: Skill or tool name
+      placeholder: e.g. my-skill
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source link
+      description: The GitHub repository or registry page it comes from.
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else?
+      description: Your connection to it (e.g. "I'm the author") and, for corrections, what should change.
