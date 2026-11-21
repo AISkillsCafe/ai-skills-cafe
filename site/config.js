@@ -2,7 +2,7 @@
    Leave a value empty ("") to hide its link until it's ready. */
 window.CAFE = {
   // Your Buy Me a Coffee page, e.g. "https://buymeacoffee.com/yourname"
-  donateUrl: "",
+  donateUrl: "https://buymeacoffee.com/aiskillscafe",
   // The GitHub repository for this site, e.g. "https://github.com/yourname/ai-skills-cafe"
   // (used for the "Request removal" form)
   repoUrl: "https://github.com/AISkillsCafe/ai-skills-cafe",
