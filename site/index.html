@@ -3,107 +3,92 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Skills Café — skills and tools for Claude, ChatGPT, Gemini & more</title>
-<meta name="description" content="A free, curated menu of AI agent skills and tools from trusted sources, with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.">
-<meta property="og:title" content="AI Skills Café">
+<title>AI Skills Café — free skills and tools for Claude, ChatGPT, Gemini & more</title>
+<meta name="description" content="Be in the company of great thinkers. A free, curated menu of AI agent skills and tools from trusted sources, with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.">
+<meta property="og:title" content="AI Skills Café — be in the company of great thinkers">
 <meta property="og:description" content="A free, curated menu of AI agent skills and tools, with setup steps for every major AI agent.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://www.aiskillscafe.com/">
 <meta name="theme-color" content="#f6f3ec">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css">
+<link rel="canonical" href="https://www.aiskillscafe.com/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css?v=2">
 </head>
-<body>
-<header class="top">
-  <a class="brand" href="./">
-    <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M6 12h17v7a7 7 0 0 1-7 7h-3a7 7 0 0 1-7-7z" fill="currentColor"/><path d="M23 14h2.5a3.5 3.5 0 0 1 0 7H23" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M11 3c-1.5 2 1.5 3 0 6M16 3c-1.5 2 1.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></svg>
-    <div><h1>AI Skills Café</h1><p id="stats">Brewing the menu…</p></div>
-  </a>
-  <div class="top-actions">
-    <button id="surprise" class="btn ghost" title="Open a random pick">🎲 Surprise me</button>
-    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
-  </div>
-</header>
-
+<body class="home">
 <main>
-  <section class="hero">
-    <div class="mode" id="mode" role="tablist" aria-label="Menu">
-      <button data-v="skills" class="on" role="tab"><span class="ico">🧠</span><span class="lbl">Skills <b id="n-skills"></b><small>know-how your AI follows</small></span></button>
-      <button data-v="tools" role="tab"><span class="ico">🔌</span><span class="lbl">Tools <b id="n-tools"></b><small>services your AI can act on</small></span></button>
+  <section class="welcome">
+    <h1 class="tagline">Be in the company of <em>Great Thinkers</em></h1>
+
+    <div class="orbit-stage" id="orbit-stage">
+      <svg class="cup" viewBox="0 0 240 240" role="img" aria-label="A steaming coffee cup printed with AI Skills Café">
+        <defs>
+          <linearGradient id="cupFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" style="stop-color:var(--cup-light)"/>
+            <stop offset="1" style="stop-color:var(--accent)"/>
+          </linearGradient>
+          <radialGradient id="coffee" cx=".5" cy=".4" r=".7">
+            <stop offset="0" stop-color="#8a5a3b"/>
+            <stop offset="1" stop-color="#3e2416"/>
+          </radialGradient>
+        </defs>
+        <g class="steam" fill="none" stroke-linecap="round">
+          <path d="M98 76c-12-14 10-22-2-38s8-22 0-32"/>
+          <path d="M122 72c-14-16 12-24 0-42s10-24 0-34"/>
+          <path d="M146 76c-12-14 10-22-2-38s8-22 0-32"/>
+        </g>
+        <ellipse cx="120" cy="206" rx="98" ry="15" class="saucer"/>
+        <ellipse cx="120" cy="201" rx="70" ry="8" class="saucer-well"/>
+        <path d="M190 104c34-4 38 50-2 48" fill="none" class="handle"/>
+        <path d="M50 90h140v40c0 40-30 66-70 66s-70-26-70-66z" fill="url(#cupFill)"/>
+        <ellipse cx="120" cy="90" rx="70" ry="13" class="rim"/>
+        <ellipse cx="120" cy="91" rx="61" ry="9" fill="url(#coffee)"/>
+        <text x="120" y="138" class="cup-text cup-small">AI Skills</text>
+        <text x="120" y="172" class="cup-text">Café</text>
+      </svg>
+      <div class="orbit" id="orbit" aria-label="Some of the sources on our menu"></div>
     </div>
-    <h2 id="hero-title">What do you want your AI to be good at?</h2>
-    <div class="search">
-      <input id="q" type="search" autocomplete="off" aria-label="Search" placeholder="Try “make a slide deck”, “review my code”, “write a launch email”…">
-    </div>
-    <div id="cats" class="chips" role="group" aria-label="Categories"></div>
+    <p class="cup-caption">Free skills &amp; tools for every AI agent</p>
+    <p class="orbit-note" id="orbit-note">Circling the cup are a few of the people and teams whose skills are on our menu.</p>
+
+    <p class="lead-in">A free, hand-checked menu of <b>skills</b> (know-how your AI follows) and <b>tools</b> (services it can act on) from trusted sources — with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.</p>
+
+    <p><a class="btn big" href="/menu">See the full menu →</a></p>
   </section>
 
-  <section class="toolbar">
-    <div class="seg skills-only" id="origin" role="group" aria-label="Made for" title="Which agent the skill was written for. Almost every skill works in Gemini CLI, GitHub Copilot, Cursor and other agents too — see each skill’s How to use it tab.">
-      <span class="seg-label">Made for</span>
-      <button data-v="all" class="on">Any agent</button>
-      <button data-v="claude">Claude</button>
-      <button data-v="openai">ChatGPT / Codex</button>
-      <button data-v="cross">Cross-agent</button>
-    </div>
-    <div class="seg" id="tier" role="group" aria-label="Source">
-      <span class="seg-label">Source</span>
-      <button data-v="all" class="on">Any</button>
-      <button data-v="official">Official</button>
-      <button data-v="trusted" class="skills-only">Trusted</button>
-      <button data-v="popular">Popular</button>
-    </div>
-    <div class="toggles">
-      <button class="toggle" id="f-fav" title="Skills and tools you’ve saved in this browser">♥ My shelf <b id="fav-count"></b></button>
-      <button class="toggle" id="f-new" hidden>✦ New <b id="new-count"></b></button>
-      <button class="toggle skills-only" id="f-tests">✓ Has tests</button>
-      <button class="toggle tools-only" id="f-remote" title="Runs online — nothing to install">☁ No install</button>
-      <button class="toggle tools-only" id="f-linked" title="Mentioned by skills on the menu">🔗 Used by skills</button>
-    </div>
-    <div class="right">
-      <select id="sort" aria-label="Sort">
-        <option value="popular">Featured</option>
-        <option value="stars">Most starred</option>
-        <option value="recent">Recently updated</option>
-        <option value="az">A – Z</option>
-        <option value="mine">My rating</option>
-      </select>
-      <div class="seg" id="view" role="group" aria-label="View">
-        <button data-v="cards" class="on">Cards</button>
-        <button data-v="galaxy">Galaxy</button>
-        <button data-v="sources" class="skills-only">Sources</button>
-      </div>
-    </div>
+  <section class="home-section">
+    <h3>How it works</h3>
+    <ol class="how">
+      <li><span>①</span><b>Find</b> a skill or tool by what you want done — search, browse categories, or press “Surprise me”.</li>
+      <li><span>②</span><b>Set it up</b> with copy-paste steps for your AI: Claude, ChatGPT, Codex, Gemini CLI, Copilot, Cursor and more.</li>
+      <li><span>③</span><b>Just ask.</b> Your AI uses the skill when your request matches — no special commands needed.</li>
+    </ol>
   </section>
 
-  <p id="count" class="count"></p>
-  <div id="grid" class="grid"></div>
-  <div id="galaxy" class="galaxy" hidden>
-    <svg id="galaxy-svg" role="img" aria-label="Map of items grouped by category"></svg>
-    <div id="tip" class="tip" hidden></div>
-    <p class="legend">Each bubble is a <span class="skills-only">skill</span><span class="tools-only">tool</span>. Colour = category · size = popularity of its source · gold ring = official. Click one to open it.</p>
-  </div>
-  <div id="sources" class="sources" hidden></div>
-  <button id="more" class="btn ghost more" hidden>Show more</button>
+  <section class="home-section">
+    <h3>Today’s specials</h3>
+    <div class="specials" id="specials"></div>
+  </section>
+
+  <section class="home-section">
+    <h3>Browse by craving</h3>
+    <div class="chips" id="home-cats"></div>
+  </section>
+
+  <section class="home-section support">
+    <p>The café is free for everyone, with no sign-up. If it helps you, you can keep it brewing.</p>
+    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+  </section>
 </main>
 
 <footer class="foot">
-  <p><b>AI Skills Café</b> is free for everyone. Skills and tools belong to their authors — we list them, credit them and link to them.</p>
+  <p class="disclaimer"><b>AI Skills Café</b> <i>is not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Sources shown are listed by us and do not endorse the café. Skills and tools belong to their authors — we list them, credit them and link to them.</i></p>
   <nav>
-    <a href="about.html">About &amp; how we choose</a>
-    <a data-removal href="#" target="_blank" rel="noopener">Request removal</a>
-    <a data-donate href="#" target="_blank" rel="noopener">☕ Support the café</a>
+    <a href="/about">About the Café and How We Choose</a>
+    <a data-removal href="#" target="_blank" rel="noopener">Request Removal</a>
+    <a data-donate href="#" target="_blank" rel="noopener">Support the Café</a>
   </nav>
-  <p class="note">Not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Product names belong to their owners.</p>
 </footer>
-
-<div id="modal" class="modal" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-name">
-    <button class="close" id="m-close" aria-label="Close">×</button>
-    <div id="m-body"></div>
-  </div>
-</div>
-<div id="toast" class="toast" hidden></div>
-<script src="config.js"></script>
-<script src="app.js"></script>
+<script src="/config.js?v=2"></script>
+<script src="/home.js?v=2"></script>
 </body>
 </html>

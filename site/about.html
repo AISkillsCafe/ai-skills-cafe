@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>About — AI Skills Café</title>
 <meta name="description" content="How AI Skills Café chooses skills and tools, how licences are handled, and how authors can ask for removal.">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css?v=2">
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="./">
+  <a class="brand" href="/">
     <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M6 12h17v7a7 7 0 0 1-7 7h-3a7 7 0 0 1-7-7z" fill="currentColor"/><path d="M23 14h2.5a3.5 3.5 0 0 1 0 7H23" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M11 3c-1.5 2 1.5 3 0 6M16 3c-1.5 2 1.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></svg>
     <div><h1>AI Skills Café</h1><p>About</p></div>
   </a>
   <div class="top-actions">
-    <a class="btn ghost" href="./">← Back to the menu</a>
+    <a class="btn ghost" href="/menu">← Back to the menu</a>
     <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
   </div>
 </header>
@@ -55,20 +55,14 @@
 </main>
 
 <footer class="foot">
-  <nav><a href="./">Menu</a><a data-removal href="#" target="_blank" rel="noopener">Request removal</a><a data-donate href="#" target="_blank" rel="noopener">☕ Support the café</a></nav>
+  <p class="disclaimer"><b>AI Skills Café</b> <i>is not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Sources shown are listed by us and do not endorse the café. Skills and tools belong to their authors — we list them, credit them and link to them.</i></p>
+  <nav>
+    <a href="/about">About the Café and How We Choose</a>
+    <a data-removal href="#" target="_blank" rel="noopener">Request Removal</a>
+    <a data-donate href="#" target="_blank" rel="noopener">Support the Café</a>
+  </nav>
 </footer>
-<script src="config.js"></script>
-<script>
-  (function () {
-    var c = window.CAFE || {};
-    document.querySelectorAll("[data-donate]").forEach(function (a) {
-      if (/^https:\/\//.test(c.donateUrl || "")) a.href = c.donateUrl; else a.hidden = true;
-    });
-    document.querySelectorAll("[data-removal]").forEach(function (a) {
-      if (/^https:\/\/github\.com\//.test(c.repoUrl || "")) a.href = c.repoUrl.replace(/\/$/, "") + "/issues/new?template=removal.yml";
-      else a.replaceWith(document.createTextNode(a.textContent));
-    });
-  })();
-</script>
+<script src="/config.js?v=2"></script>
+<script src="/links.js?v=2"></script>
 </body>
 </html>

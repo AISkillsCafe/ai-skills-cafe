@@ -28,7 +28,7 @@ const RANK = { official: 0, trusted: 1, popular: 2 };
 let lib = { skills: [], sources: [], tools: [], updated_at: null };
 let user = { favorites: [], ratings: {}, notes: {}, tried: [] };
 let mode = "skills";
-const f = { q: "", cat: "all", origin: "all", tier: "all", fav: false, isNew: false, tests: false, remote: false, linked: false,
+const f = { q: "", cat: "all", repo: "", origin: "all", tier: "all", fav: false, isNew: false, tests: false, remote: false, linked: false,
   sort: "popular", view: "cards", shown: PAGE };
 let current = [];
 let skillTools = {};
@@ -63,7 +63,7 @@ function loadUser() {
 
 /* ---------- loading ---------- */
 async function load() {
-  const [skills, tools] = await Promise.all([getJSON("data/skills.json"), getJSON("data/tools.json").catch(() => ({}))]);
+  const [skills, tools] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({}))]);
   user = Object.assign({ favorites: [], ratings: {}, notes: {}, tried: [] }, loadUser());
   lib = { skills: skills.skills || [], sources: skills.sources || [], updated_at: skills.updated_at,
     tools: tools.tools || [], tools_updated_at: tools.updated_at, registry_entries: tools.registry_entries || 0 };
@@ -84,6 +84,7 @@ function renderMode() {
   document.body.dataset.mode = mode;
   document.querySelectorAll("#mode button").forEach((b) => b.classList.toggle("on", b.dataset.v === mode));
   $("#hero-title").textContent = HERO[mode][0];
+  $("#surprise").title = mode === "tools" ? "Open a random tool" : "Open a random skill";
   $("#q").placeholder = HERO[mode][1];
   $("#stats").textContent = isTools
     ? (n ? `${n} tools · picked from ${(lib.registry_entries || 0).toLocaleString()} in the MCP Registry · refreshed nightly, last ${fmtDate(lib.tools_updated_at)}` : "No tools yet")
@@ -116,7 +117,7 @@ function filtered() {
   const tokens = f.q.toLowerCase().split(/[^a-z0-9.+#]+/).filter((t) => t && !STOP.has(t));
   const isTools = mode === "tools";
   let list = items().filter((s) =>
-    (f.cat === "all" || s.category === f.cat) && (isTools || f.origin === "all" || s.origin === f.origin) &&
+    (f.cat === "all" || s.category === f.cat) && (isTools || !f.repo || s.repo === f.repo) && (isTools || f.origin === "all" || s.origin === f.origin) &&
     (f.tier === "all" || s.tier === f.tier) && (!f.fav || user.favorites.includes(s.id)) && (!f.isNew || s.is_new) &&
     (isTools || !f.tests || s.has_tests) && (!isTools || !f.remote || s.is_remote) &&
     (!isTools || !f.linked || (s.skills || []).length));
@@ -136,7 +137,7 @@ function filtered() {
 }
 function activeFilters() {
   const isTools = mode === "tools";
-  return [f.q && "search", f.cat !== "all" && "category", !isTools && f.origin !== "all" && "agent", f.tier !== "all" && "source",
+  return [f.q && "search", f.cat !== "all" && "category", !isTools && f.repo && "source " + f.repo, !isTools && f.origin !== "all" && "agent", f.tier !== "all" && "source",
     f.fav && "My shelf", f.isNew && "New", !isTools && f.tests && "Has tests", isTools && f.remote && "No install",
     isTools && f.linked && "Used by skills"].filter(Boolean);
 }
@@ -743,7 +744,7 @@ $("#surprise").onclick = () => {
   if (pool.length) openItem(pool[Math.floor(Math.random() * pool.length)].id);
 };
 function clearFilters(rerender = true) {
-  Object.assign(f, { q: "", cat: "all", origin: "all", tier: "all", fav: false, isNew: false, tests: false, remote: false, linked: false, shown: PAGE });
+  Object.assign(f, { q: "", cat: "all", repo: "", origin: "all", tier: "all", fav: false, isNew: false, tests: false, remote: false, linked: false, shown: PAGE });
   $("#q").value = "";
   ["#origin", "#tier"].forEach((id) => $(id).querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === "all")));
   ["#f-fav", "#f-new", "#f-tests", "#f-remote", "#f-linked"].forEach((id) => $(id).classList.remove("on"));
@@ -764,4 +765,12 @@ document.querySelectorAll("[data-removal]").forEach((a) => {
   else a.hidden = true;
 });
 
-load().catch(() => ($("#stats").textContent = "Couldn’t load the menu. Please refresh the page."));
+/* Deep links from the welcome page: /menu?q=…&cat=…&source=owner/repo&mode=tools&open=<id> */
+const LINK = new URLSearchParams(location.search);
+if (LINK.get("mode") === "tools") mode = "tools";
+if (LINK.get("q")) { f.q = LINK.get("q").slice(0, 100); $("#q").value = f.q; }
+if (CATS[LINK.get("cat")]) f.cat = LINK.get("cat");
+if (LINK.get("source")) f.repo = LINK.get("source").slice(0, 200);
+
+load().then(() => { if (LINK.get("open")) openItem(LINK.get("open")); })
+  .catch(() => ($("#stats").textContent = "Couldn’t load the menu. Please refresh the page."));

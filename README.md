@@ -20,7 +20,7 @@ Live site: https://www.aiskillscafe.com
 | Remove an item after a removal request | Add its id, `owner/repo`, or tool registry name to `scripts/removed.json`, commit, then run the workflow (Actions → Nightly menu update → Run workflow) |
 | Add or remove a trusted skill source | Edit `CURATED` in `scripts/updater.py` |
 | Refresh the data now | Actions → Nightly menu update → Run workflow |
-| Preview locally | `python -m http.server 8080 --directory site`, then open http://localhost:8080 |
+| Preview locally | `python scripts/serve.py`, then open http://localhost:8080 |
 
 ## Cloudflare Pages settings
 

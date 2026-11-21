@@ -192,3 +192,71 @@ body[data-mode="tools"] .skills-only, body:not([data-mode="tools"]) .tools-only 
 .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 999px; font-weight: 600; z-index: 80; box-shadow: var(--shadow); max-width: 90vw; animation: rise .25s; }
 @media (max-width: 640px) { .toolbar .right { margin-left: 0; } .hero { padding-top: 24px; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- welcome page ---------- */
+:root { --cup-light: #d98a5f; --steam: rgba(120,110,95,.75); }
+@media (prefers-color-scheme: dark) { :root { --cup-light: #f0a77d; --steam: rgba(236,232,223,.6); } }
+.welcome { text-align: center; padding: 28px clamp(16px, 4vw, 40px) 8px; max-width: 980px; margin: 0 auto; }
+.tagline { font-size: clamp(30px, 5.4vw, 54px); line-height: 1.1; margin: 6px auto 4px; max-width: 14ch; }
+.tagline em { font-style: italic; color: var(--accent); }
+
+.orbit-stage { --size: min(500px, 88vw); --r: calc(var(--size) / 2 - 36px); position: relative; width: var(--size); height: var(--size); margin: 8px auto 0; }
+.cup { position: absolute; left: 50%; top: 50%; width: 50%; transform: translate(-50%, -50%); overflow: visible; filter: drop-shadow(0 10px 18px rgba(60,35,15,.18)); }
+.cup .saucer { fill: var(--surface2); stroke: var(--line); stroke-width: 1.5; }
+.cup .saucer-well { fill: color-mix(in srgb, var(--line) 60%, transparent); }
+.cup .handle { stroke: var(--accent); stroke-width: 13; stroke-linecap: round; }
+.cup .rim { fill: var(--cup-light); }
+.cup-text { fill: #fffdf8; text-anchor: middle; font: 600 32px Georgia, "Iowan Old Style", serif; letter-spacing: .01em; }
+.cup-small { font-size: 21px; letter-spacing: .08em; text-transform: uppercase; font-family: "Segoe UI", system-ui, sans-serif; }
+.steam path { stroke: var(--steam); stroke-width: 8; stroke-dasharray: 90 110; animation: steam 3.6s ease-in-out infinite; }
+.steam path:nth-child(2) { animation-delay: -1.2s; stroke-width: 9; }
+.steam path:nth-child(3) { animation-delay: -2.4s; }
+@keyframes steam {
+  0% { stroke-dashoffset: 0; opacity: 0; transform: translateY(6px); }
+  30% { opacity: 1; }
+  100% { stroke-dashoffset: -200; opacity: 0; transform: translateY(-10px); }
+}
+
+.orbit { position: absolute; inset: 0; animation: orbit 80s linear infinite; }
+.sat { position: absolute; left: 50%; top: 50%; width: 0; height: 0; text-decoration: none; color: var(--ink);
+  transform: rotate(calc(var(--i) * 360deg / var(--n))) translateY(calc(var(--r) * -1)) rotate(calc(var(--i) * -360deg / var(--n))); }
+/* anchored so the picture's centre sits on the orbit; it counter-spins around that centre to stay upright */
+.sat-in { position: absolute; left: -48px; top: -27px; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;
+  transform-origin: 48px 27px; animation: orbit 80s linear infinite reverse; }
+.sat img { width: 54px; height: 54px; border-radius: 50%; background: var(--surface); border: 3px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line), var(--shadow); transition: transform .2s; }
+.sat small { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 600; background: var(--surface); border: 1px solid var(--line); padding: 1px 8px; border-radius: 999px; }
+.sat:hover img, .sat:focus-visible img { transform: scale(1.12); }
+.orbit-stage:hover .orbit, .orbit-stage:hover .sat-in, .orbit-stage:focus-within .orbit, .orbit-stage:focus-within .sat-in { animation-play-state: paused; }
+@keyframes orbit { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .orbit, .sat-in, .steam path { animation: none; } .steam path { opacity: .8; } }
+@media (max-width: 560px) { .orbit-stage { --r: calc(var(--size) / 2 - 26px); } .sat img { width: 42px; height: 42px; } .sat-in { width: 76px; left: -38px; top: -21px; transform-origin: 38px 21px; } .sat small { font-size: 10.5px; max-width: 76px; padding: 0 6px; } }
+
+.cup-caption { margin: 30px auto 0; font: 400 clamp(17px, 2.4vw, 21px)/1.4 Georgia, "Iowan Old Style", serif; font-style: italic; color: var(--muted); letter-spacing: .01em; }
+.orbit-note { color: var(--muted); font-size: 13.5px; margin: 10px auto 0; max-width: 520px; }
+.lead-in { font-size: 17px; line-height: 1.6; max-width: 640px; margin: 22px auto 18px; }
+.btn.big { padding: 12px 24px; font-size: 16px; background: var(--ink); color: var(--bg); border-color: transparent; }
+
+.home-section { max-width: 980px; margin: 44px auto 0; padding: 0 clamp(16px, 4vw, 40px); }
+.home-section h3 { font-size: 24px; margin-bottom: 14px; }
+.how { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.how li { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; line-height: 1.55; }
+.how li span { display: block; font-size: 26px; color: var(--accent); margin-bottom: 4px; }
+.specials { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.special { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-top: 4px solid var(--c); border-radius: 16px; padding: 16px 18px; transition: transform .15s, box-shadow .15s; }
+.special:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.special .glyph { font-size: 24px; }
+.special b { font-family: Georgia, serif; font-size: 18px; }
+.special small { color: var(--muted); }
+.special p { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+a.chip { text-decoration: none; color: var(--ink); display: inline-block; }
+.support { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; max-width: 760px; }
+.support p { margin: 0 0 14px; font-size: 16px; }
+.home .welcome { padding-top: 40px; overflow-x: clip; }  /* the spinning ring's square box would otherwise widen the page on phones */
+
+/* shared footer */
+.foot .disclaimer { line-height: 1.6; }
+.foot .disclaimer b { color: var(--ink); }
+.foot .disclaimer i { color: var(--muted); }
+.foot nav { justify-content: center; gap: 8px 48px; margin: 18px 0 0; }
+.foot nav a { font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
