@@ -9,6 +9,7 @@ body:
         Thanks for getting in touch, and sorry for any trouble. You didn't ask to be listed, so removal is simple:
         requests from authors are handled within 7 days, and removed items stay off the menu.
         Please don't include private information — this page is public.
+        Prefer to ask privately? Email removals@aiskillscafe.com instead.
   - type: dropdown
     id: kind
     attributes:
