@@ -1,0 +1,6 @@
+{
+  "_help": "Hand-written setup notes shown at the top of a skill's 'How to use it' tab. Key: a skill id (owner/repo::path) or a whole repository (owner/repo). Edited by hand; the nightly build leaves this file alone.",
+  "notes": {
+    "Graphify-Labs/graphify": "Needs Python on your computer. The first time you run /graphify it installs its own helper program (graphifyy) automatically. Building a graph from documents, images or video uses noticeably more AI usage than code alone."
+  }
+}

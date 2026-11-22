@@ -99,7 +99,8 @@ def main():
 
         def body(s):
             d = details.get(s["id"]) or {}
-            path = (d.get("folder") + "/SKILL.md") if d.get("folder") else "SKILL.md"
+            fname = s.get("skill_file") or "SKILL.md"
+            path = (d.get("folder") + "/" + fname) if d.get("folder") else fname
             text = updater.fetch_raw(s["repo"], d.get("branch", "main"), path)
             return updater.parse_frontmatter(text)[1] if text else ""
         with ThreadPoolExecutor(max_workers=8) as pool:

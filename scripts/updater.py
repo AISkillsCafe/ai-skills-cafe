@@ -31,7 +31,10 @@ CURATED = [
     ("addyosmani/agent-skills", "trusted"),
     ("K-Dense-AI/scientific-agent-skills", "trusted"),
     ("coreyhaines31/marketingskills", "trusted"),
+    ("Graphify-Labs/graphify", "trusted"),
 ]
+# Hand-set categories where the automatic keyword sorting gets it wrong.
+CATEGORY_FOR = {"Graphify-Labs/graphify": "code"}
 DISCOVERY_TOPICS = ["agent-skills", "claude-skills", "codex-skills", "gemini-skills"]
 MIN_STARS = 2000
 MAX_DISCOVERED_REPOS = 12
@@ -180,7 +183,7 @@ def find_skill_paths(tree):
     paths = []
     for e in tree:
         p = e.get("path", "")
-        if e.get("type") != "blob" or not (p == "SKILL.md" or p.endswith("/SKILL.md")):
+        if e.get("type") != "blob" or p.rsplit("/", 1)[-1].lower() != "skill.md":
             continue
         segs = [s.lower() for s in p.split("/")[:-1]]
         if any(s in SKIP_SEGMENTS for s in segs):
@@ -201,7 +204,12 @@ def build_skill(meta, tier, path, text, blobs):
         desc = _clean(para)[:400]
     if not name or len(desc) < 15:
         return None
-    files = [p for p in blobs if p.startswith(folder + "/")] if folder else ["SKILL.md"]
+    fname = path.rsplit("/", 1)[-1]          # usually SKILL.md; a few skills use skill.md
+    files = [p for p in blobs if p.startswith(folder + "/")] if folder else [fname]
+    if folder and (folder + "/__init__.py") in files:
+        # The skill file sits inside a program's own code folder (e.g. a Python package that installs itself).
+        # Agents only need the skill file and its reference notes, not the program's source.
+        files = [path] + [p for p in files if p.startswith(folder + "/references/")]
     rel = [f[len(folder) + 1:].lower() if folder else f.lower() for f in files]
     summary, use_case = split_description(desc)
     branch = meta["default_branch"]
@@ -225,11 +233,13 @@ def build_skill(meta, tier, path, text, blobs):
         "updated": meta.get("pushed_at", ""),
         "tier": tier,
         "origin": origin_for(repo, path, meta.get("topics")),
-        "category": categorize(name, desc),
+        "category": CATEGORY_FOR.get(repo) or categorize(name, desc),
         "file_count": len(files),
         "has_scripts": any(r.endswith((".py", ".sh", ".js", ".ts", ".mjs", ".rb")) for r in rel),
         "has_tests": any(re.search(r"(^|/)(tests?|evals?)(/|\.|_)|[._-]test\.", r) for r in rel),
     }
+    if fname != "SKILL.md":
+        skill["skill_file"] = fname
     if skill["license"] == "NOASSERTION":
         skill["license"] = ""
     detail = {"body": body.strip()[:60000], "files": files[:120], "folder": folder,

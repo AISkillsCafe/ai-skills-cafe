@@ -32,6 +32,7 @@ const f = { q: "", cat: "all", repo: "", origin: "all", tier: "all", fav: false,
   sort: "popular", view: "cards", shown: PAGE };
 let current = [];
 let skillTools = {};
+let skillNotes = {};   // hand-written setup notes by skill id or repo (site/data/skill_notes.json)
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -63,8 +64,9 @@ function loadUser() {
 
 /* ---------- loading ---------- */
 async function load() {
-  const [skills, tools, builtins] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({})),
-    getJSON("/data/builtins.json").catch(() => ({}))]);
+  const [skills, tools, builtins, notes] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({})),
+    getJSON("/data/builtins.json").catch(() => ({})), getJSON("/data/skill_notes.json").catch(() => ({}))]);
+  skillNotes = notes.notes || {};
   user = Object.assign({ favorites: [], ratings: {}, notes: {}, tried: [] }, loadUser());
   const extras = (builtins.items || []).filter((b) => b.id && b.name && CATS[b.category]);   // features built into an agent
   lib = { skills: [...extras, ...(skills.skills || [])], sources: skills.sources || [], updated_at: skills.updated_at,
@@ -559,7 +561,7 @@ async function downloadSkill(s, btn) {
         if (!r.ok) return;
         const data = new Uint8Array(await r.arrayBuffer());
         total += data.length;
-        files.push({ name: `${s.slug}/${p}`, data });
+        files.push({ name: `${s.slug}/${p === s.skill_file ? "SKILL.md" : p}`, data });   // agents expect SKILL.md
         btn.textContent = `Downloading… ${++done}/${list.length}`;
       }));
       if (total > 8e6) throw new Error("This skill is too large to bundle here — get it from the author’s page.");
@@ -593,7 +595,7 @@ function openSkill(s) {
       · updated ${fmtDate(s.updated)} · licence ${esc(s.license || "not stated")}${s.open ? " (open)" : ""}</p>
     ${rateHtml(id)}
     ${tabsHtml([["invoke", "How to use it"], ["about", "About"], ["inside", "What’s inside"], ["notes", "My notes"]])}
-    ${panel("invoke", platformSeg([["claude-code", "Claude Code"], ["claude-app", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]]), true)}
+    ${panel("invoke", (skillNotes[s.id] || skillNotes[s.repo] ? `<p class="setup-note">${esc(skillNotes[s.id] || skillNotes[s.repo])}</p>` : "") + platformSeg([["claude-code", "Claude Code"], ["claude-app", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]]), true)}
     ${panel("about", `
       ${when ? `<h3>When to reach for it</h3><p>${esc(when)}</p>` : ""}
       ${what ? `<h3>What it does</h3><p>${esc(what)}</p>` : ""}
@@ -607,7 +609,7 @@ function openSkill(s) {
   const inside = document.querySelector('[data-p="inside"]');
   inside.innerHTML = '<p class="note">Loading…</p>';
   const detail = s.open
-    ? fetch(rawUrl(s, "SKILL.md")).then((r) => (r.ok ? r.text() : Promise.reject())).then((t) => {
+    ? fetch(rawUrl(s, s.skill_file || "SKILL.md")).then((r) => (r.ok ? r.text() : Promise.reject())).then((t) => {
         body = stripFront(t);
         inside.innerHTML = files + `<h3>SKILL.md — the instructions your agent reads</h3><div class="md">${md(body)}</div>
           <p class="note">Shown from <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">the author’s repository</a> under the ${esc(s.license)} licence.</p>`;
