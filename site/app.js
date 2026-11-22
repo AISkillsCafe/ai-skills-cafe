@@ -550,7 +550,10 @@ async function downloadSkill(s, btn) {
 
 function openSkill(s) {
   const id = s.id;
+  // The build splits the author's description into "use this when…" sentences (use_case) and the rest (summary).
+  // When every sentence was a "when" sentence, summary falls back to the whole description, so don't show it twice.
   const when = s.use_case && s.use_case !== s.summary ? s.use_case : "";
+  const what = when && s.summary === s.description ? "" : s.summary || s.description;
   const tools = (skillTools[id] || []).slice(0, 6);
   const repoLink = `<a href="${esc(safeUrl("https://github.com/" + s.repo))}" target="_blank" rel="noopener">${esc(s.repo)} ↗</a>`;
   showSheet(s, headHtml(s, CATS[s.category][1], `
@@ -566,8 +569,8 @@ function openSkill(s) {
     ${tabsHtml([["invoke", "How to use it"], ["about", "About"], ["inside", "What’s inside"], ["notes", "My notes"]])}
     ${panel("invoke", platformSeg([["claude-code", "Claude Code"], ["claude-app", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]]), true)}
     ${panel("about", `
-      ${when && !s.description.includes(when) ? `<h3>When to reach for it</h3><p>${esc(when)}</p>` : ""}
-      <h3>In the author’s words</h3><p>${esc(s.description)}</p>
+      ${when ? `<h3>When to reach for it</h3><p>${esc(when)}</p>` : ""}
+      ${what ? `<h3>What it does</h3><p>${esc(what)}</p>` : ""}
       ${tools.length ? `<h3>Works with these tools</h3>${miniList(tools)}<p class="note">Tools this skill mentions by name. Connect one to let your AI act on that service.</p>` : ""}
       <p class="note">The star count belongs to the whole source collection (${esc(s.repo)}), not this single skill. ${TIER_HELP.skill[s.tier]}</p>`)}
     ${panel("inside", "")}
