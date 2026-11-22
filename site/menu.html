@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#f6f3ec">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=9">
+<link rel="stylesheet" href="/style.css?v=13">
 </head>
 <body>
 <header class="top">
@@ -19,16 +19,16 @@
     <div><h1>AI Skills Café</h1><p id="stats">Brewing the menu…</p></div>
   </a>
   <div class="top-actions">
-    <button id="surprise" class="btn ghost" title="Open a random skill">🎲 Surprise me</button>
-    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+    <button id="surprise" class="btn ghost" title="Open a random skill" aria-label="Surprise me">🎲<span class="long"> Surprise me</span></button>
+    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ <span class="long">Buy me a coffee</span><span class="short">Donate</span></a>
   </div>
 </header>
 
 <main>
   <section class="hero">
     <div class="mode" id="mode" role="tablist" aria-label="Menu">
-      <button data-v="skills" class="on" role="tab"><span class="ico">🧠</span><span class="lbl">Skills <b id="n-skills"></b><small>know-how your AI follows</small></span></button>
-      <button data-v="tools" role="tab"><span class="ico">🔌</span><span class="lbl">Tools <b id="n-tools"></b><small>services your AI can act on</small></span></button>
+      <button data-v="skills" class="on" role="tab" aria-selected="true"><span class="ico">🧠</span><span class="lbl">Skills <b id="n-skills"></b><small>know-how your AI follows</small></span></button>
+      <button data-v="tools" role="tab" aria-selected="false"><span class="ico">🔌</span><span class="lbl">Tools <b id="n-tools"></b><small>services your AI can act on</small></span></button>
     </div>
     <h2 id="hero-title">What do you want your AI to be good at?</h2>
     <div class="search">
@@ -38,49 +38,55 @@
   </section>
 
   <section class="toolbar">
-    <div class="seg skills-only" id="origin" role="group" aria-label="Made for" title="Which agent the skill was written for. Almost every skill works in Gemini CLI, GitHub Copilot, Cursor and other agents too — see each skill’s How to use it tab.">
-      <span class="seg-label">Made for:</span>
-      <button data-v="all" class="on">Any agent</button>
-      <button data-v="claude">Claude</button>
-      <button data-v="openai">ChatGPT / Codex</button>
-      <button data-v="cross">Cross-agent</button>
-    </div>
-    <div class="seg" id="tier" role="group" aria-label="Source">
-      <span class="seg-label">Source:</span>
-      <button data-v="all" class="on">Any</button>
-      <button data-v="official">Official</button>
-      <button data-v="trusted" class="skills-only">Trusted</button>
-      <button data-v="popular">Popular</button>
-    </div>
-    <div class="toggles">
-      <button class="toggle" id="f-fav" title="Skills and tools you’ve saved in this browser">♥ My shelf <b id="fav-count"></b></button>
-      <button class="toggle" id="f-new" hidden>✦ New <b id="new-count"></b></button>
-      <button class="toggle skills-only" id="f-tests" title="Only skills that include test or eval files">✓ Has tests</button>
-      <button class="toggle tools-only" id="f-remote" title="Runs online — nothing to install">☁ No install</button>
-      <button class="toggle tools-only" id="f-linked" title="Mentioned by skills on the menu">🔗 Used by skills</button>
-    </div>
+    <button class="btn ghost filters-btn" id="filters-btn" aria-expanded="false" aria-controls="filters">Filters &amp; sort <b id="filters-n"></b></button>
+    <button class="toggle" id="f-fav" aria-pressed="false" title="Skills and tools you’ve saved in this browser">♥ My shelf <b id="fav-count"></b></button>
     <div class="right">
-      <select id="sort" aria-label="Sort">
-        <option value="popular">Featured</option>
-        <option value="stars">Most starred</option>
-        <option value="recent">Recently updated</option>
-        <option value="az">A – Z</option>
-        <option value="mine">My rating</option>
-      </select>
       <div class="seg" id="view" role="group" aria-label="View">
-        <button data-v="cards" class="on" title="Show the menu as cards">Cards</button>
-        <button data-v="galaxy" title="Show a map of the menu grouped by category">Galaxy</button>
-        <button data-v="sources" class="skills-only" title="Group skills by where they come from">Sources</button>
+        <button data-v="cards" class="on" aria-pressed="true" title="Show the menu as cards">Cards</button>
+        <button data-v="galaxy" aria-pressed="false" title="Show a map of the menu grouped by category">Galaxy</button>
+        <button data-v="sources" class="skills-only" aria-pressed="false" title="Group skills by where they come from">Sources</button>
       </div>
+    </div>
+    <div class="filters" id="filters" hidden>
+      <div class="seg skills-only" id="origin" role="group" aria-labelledby="origin-label" title="Which agent the skill was written for. Almost every skill works in Gemini CLI, GitHub Copilot, Cursor and other agents too — see each skill’s How to use it tab.">
+        <span class="seg-label" id="origin-label">Made for:</span>
+        <button data-v="all" class="on" aria-pressed="true">Any agent</button>
+        <button data-v="claude" aria-pressed="false">Claude</button>
+        <button data-v="openai" aria-pressed="false">ChatGPT / Codex</button>
+        <button data-v="cross" aria-pressed="false">Cross-agent</button>
+      </div>
+      <div class="seg" id="tier" role="group" aria-labelledby="tier-label">
+        <span class="seg-label" id="tier-label">Source:</span>
+        <button data-v="all" class="on" aria-pressed="true">Any</button>
+        <button data-v="official" aria-pressed="false">Official</button>
+        <button data-v="trusted" class="skills-only" aria-pressed="false">Trusted</button>
+        <button data-v="popular" aria-pressed="false">Popular</button>
+      </div>
+      <div class="toggles">
+        <button class="toggle" id="f-new" aria-pressed="false" hidden>✦ New <b id="new-count"></b></button>
+        <button class="toggle skills-only" id="f-tests" aria-pressed="false" title="Only skills that include test or eval files">✓ Has tests</button>
+        <button class="toggle tools-only" id="f-remote" aria-pressed="false" title="Runs online — nothing to install">☁ No install</button>
+        <button class="toggle tools-only" id="f-linked" aria-pressed="false" title="Mentioned by skills on the menu">🔗 Used by skills</button>
+      </div>
+      <label class="sort"><span>Sort by</span>
+        <select id="sort">
+          <option value="popular">Featured</option>
+          <option value="stars">Most GitHub stars</option>
+          <option value="recent">Recently updated</option>
+          <option value="az">A – Z</option>
+          <option value="mine">My rating</option>
+        </select>
+      </label>
     </div>
   </section>
 
-  <p id="count" class="count"></p>
+  <p id="count" class="count" role="status" aria-live="polite"></p>
   <div id="grid" class="grid"></div>
   <div id="galaxy" class="galaxy" hidden>
-    <svg id="galaxy-svg" role="img" aria-label="Map of items grouped by category"></svg>
+    <svg id="galaxy-svg" tabindex="0" role="application" aria-roledescription="map" aria-label="Map of items grouped by category. Use the arrow keys to move between bubbles and Enter to open one."></svg>
     <div id="tip" class="tip" hidden></div>
-    <p class="legend">Each bubble is a <span class="skills-only">skill</span><span class="tools-only">tool</span>. Colour = category · size = popularity of its source · gold ring = official. Click one to open it.</p>
+    <p class="sr-only" id="g-live" aria-live="polite"></p>
+    <p class="legend">Each bubble is a <span class="skills-only">skill</span><span class="tools-only">tool</span>. Colour = category · size = popularity of its source · gold ring = official. Click one to open it, or focus the map and use the arrow keys. Prefer a list? Choose Cards.</p>
   </div>
   <div id="sources" class="sources" hidden></div>
   <button id="more" class="btn ghost more" hidden>Show more</button>
@@ -101,8 +107,9 @@
     <div id="m-body"></div>
   </div>
 </div>
-<div id="toast" class="toast" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 <script src="/config.js?v=4"></script>
-<script src="/app.js?v=5"></script>
+<script src="/blurb.js?v=1"></script>
+<script src="/app.js?v=7"></script>
 </body>
 </html>

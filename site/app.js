@@ -82,7 +82,7 @@ async function load() {
 function renderMode() {
   const n = items().length, isTools = mode === "tools";
   document.body.dataset.mode = mode;
-  document.querySelectorAll("#mode button").forEach((b) => b.classList.toggle("on", b.dataset.v === mode));
+  document.querySelectorAll("#mode button").forEach((b) => { b.classList.toggle("on", b.dataset.v === mode); b.setAttribute("aria-selected", b.dataset.v === mode); });
   $("#hero-title").textContent = HERO[mode][0];
   $("#surprise").title = mode === "tools" ? "Open a random tool" : "Open a random skill";
   $("#q").placeholder = HERO[mode][1];
@@ -93,13 +93,17 @@ function renderMode() {
   $("#f-new").hidden = !newCount;
   $("#new-count").textContent = newCount || "";
   if (isTools && f.view === "sources") setView("cards");
-  renderCats();
+  syncControls();
   render();
 }
 
 /* ---------- filtering ---------- */
 function score(s, tokens) {
   let total = 0;
+  if (tokens.length > 1) {   // the whole phrase ("slide deck") beats scattered single words
+    const phrase = tokens.join(" ");
+    if ((s.name + " " + s.description).toLowerCase().replace(/[-_]/g, " ").includes(phrase)) total += 10;
+  }
   const name = s.name.toLowerCase().replace(/[-_]/g, " "), desc = s.description.toLowerCase();
   const cat = CATS[s.category][0].toLowerCase(), who = (s.author + " " + s.repo + " " + (s.keyword || "")).toLowerCase();
   for (const t of tokens) {
@@ -113,11 +117,12 @@ function score(s, tokens) {
   }
   return total;
 }
-function filtered() {
-  const tokens = f.q.toLowerCase().split(/[^a-z0-9.+#]+/).filter((t) => t && !STOP.has(t));
+const tokenize = (q) => q.toLowerCase().split(/[^a-z0-9.+#]+/).filter((t) => t && !STOP.has(t));
+function filtered(cat = f.cat) {
+  const tokens = tokenize(f.q);
   const isTools = mode === "tools";
   let list = items().filter((s) =>
-    (f.cat === "all" || s.category === f.cat) && (isTools || !f.repo || s.repo === f.repo) && (isTools || f.origin === "all" || s.origin === f.origin) &&
+    (cat === "all" || s.category === cat) && (isTools || !f.repo || s.repo === f.repo) && (isTools || f.origin === "all" || s.origin === f.origin) &&
     (f.tier === "all" || s.tier === f.tier) && (!f.fav || user.favorites.includes(s.id)) && (!f.isNew || s.is_new) &&
     (isTools || !f.tests || s.has_tests) && (!isTools || !f.remote || s.is_remote) &&
     (!isTools || !f.linked || (s.skills || []).length));
@@ -135,6 +140,11 @@ function filtered() {
   };
   return list.slice().sort(sorters[f.sort]);
 }
+/* How many of the tucked-away filters are on (shown on the Filters & sort button). */
+function hiddenFilterCount() {
+  const isTools = mode === "tools";
+  return [!isTools && f.origin !== "all", f.tier !== "all", f.isNew, !isTools && f.tests, isTools && f.remote, isTools && f.linked].filter(Boolean).length;
+}
 function activeFilters() {
   const isTools = mode === "tools";
   return [f.q && "search", f.cat !== "all" && "category", !isTools && f.repo && "source " + f.repo, !isTools && f.origin !== "all" && "agent", f.tier !== "all" && "source",
@@ -144,12 +154,13 @@ function activeFilters() {
 
 /* ---------- rendering ---------- */
 function renderCats() {
-  const counts = {}, all = items();
-  all.forEach((s) => (counts[s.category] = (counts[s.category] || 0) + 1));
-  if (f.cat !== "all" && !counts[f.cat]) f.cat = "all";
-  $("#cats").innerHTML = `<button class="chip ${f.cat === "all" ? "on" : ""}" data-cat="all">All <small>${all.length}</small></button>` +
-    Object.keys(CATS).filter((c) => counts[c]).map((c) =>
-      `<button class="chip ${f.cat === c ? "on" : ""}" data-cat="${c}" style="--c:var(--c-${c})">${CATS[c][1]} ${CATS[c][0]} <small>${counts[c]}</small></button>`).join("");
+  const exists = {}, counts = {}, pool = filtered("all");
+  items().forEach((s) => (exists[s.category] = true));
+  pool.forEach((s) => (counts[s.category] = (counts[s.category] || 0) + 1));
+  if (f.cat !== "all" && !exists[f.cat]) f.cat = "all";
+  const chip = (c, label, n, style = "") => `<button class="chip ${f.cat === c ? "on" : ""} ${n ? "" : "zero"}" data-cat="${c}" aria-pressed="${f.cat === c}"${style}>${label} <small>${n}</small></button>`;
+  $("#cats").innerHTML = chip("all", "All", pool.length) +
+    Object.keys(CATS).filter((c) => exists[c]).map((c) => chip(c, `${CATS[c][1]} ${CATS[c][0]}`, counts[c] || 0, ` style="--c:var(--c-${c})"`)).join("");
 }
 function cardHtml(s, i) {
   const mine = user.ratings[s.id], isTool = s.kind === "tool";
@@ -172,11 +183,17 @@ function cardHtml(s, i) {
 }
 function render() {
   current = filtered();
-  const all = items(), noun = mode === "skills" ? "skills" : "tools";
+  renderCats();
+  const all = items(), noun = mode === "skills" ? "skills" : "tools", one = noun.slice(0, -1);
+  const hiddenN = hiddenFilterCount();
+  $("#filters-n").textContent = hiddenN ? `(${hiddenN})` : "";
+  document.body.dataset.view = f.view;
+  syncUrl();
   $("#fav-count").textContent = all.filter((s) => user.favorites.includes(s.id)).length || "";
   const active = activeFilters();
   const clearBtn = active.length ? ` · filtered by ${esc(active.join(", "))} <button class="btn small" data-clear>Clear filters</button>` : "";
-  $("#count").innerHTML = !all.length ? "" : f.view === "sources" ? `${lib.sources.length} sources`
+  const srcs = sourcesShown();
+  $("#count").innerHTML = !all.length ? "" : f.view === "sources" ? `${srcs.length} of ${lib.sources.length} sources${f.q ? ` matching “${esc(f.q)}”` : ""}`
     : `${current.length} of ${all.length} ${noun}${clearBtn}`;
   $("#grid").hidden = f.view !== "cards";
   $("#galaxy").hidden = f.view !== "galaxy";
@@ -184,22 +201,40 @@ function render() {
   $("#more").hidden = true;
   if (f.view === "cards") {
     const shelfEmpty = f.fav && !all.some((s) => user.favorites.includes(s.id));
-    $("#grid").innerHTML = current.length ? current.slice(0, f.shown).map(cardHtml).join("")
-      : `<div class="empty"><h3>${all.length ? "Nothing matches that" : `No ${noun} yet`}</h3><p>${all.length
-        ? (shelfEmpty ? `“My shelf” is switched on, but you haven’t added any ${noun} to it yet. Click the ♥ on a card to add one.` : `Your filters are hiding every ${mode === "skills" ? "skill" : "tool"}.`) +
-          `</p><p><button class="btn primary" data-clear>Clear filters and show all ${noun}</button>`
-        : "The menu is being restocked — please check back soon."}</p></div>`;
+    $("#grid").innerHTML = current.length ? current.slice(0, f.shown).map(cardHtml).join("") : emptyHtml(all, noun, one, shelfEmpty, active);
     $("#more").hidden = current.length <= f.shown;
     $("#more").textContent = `Show more (${current.length - f.shown} left)`;
   } else if (f.view === "galaxy") drawGalaxy(current);
-  else renderSources();
+  else renderSources(srcs);
 }
-function renderSources() {
-  $("#sources").innerHTML = lib.sources.map((s) => `<div class="source">
+/* No results: say why, and offer the most likely way out. */
+function emptyHtml(all, noun, one, shelfEmpty, active) {
+  if (!all.length) return `<div class="empty"><h3>No ${noun} yet</h3><p>The menu is being restocked — please check back soon.</p></div>`;
+  if (shelfEmpty) return `<div class="empty"><h3>Your shelf is empty</h3><p>“My shelf” is switched on, but you haven’t added any ${noun} to it yet. Click the ♥ on a card to add one.</p>
+    <p><button class="btn primary" data-clear>Show all ${noun}</button></p></div>`;
+  const onlySearch = active.length === 1 && f.q;
+  const other = mode === "skills" ? lib.tools : lib.skills, otherNoun = mode === "skills" ? "tools" : "skills";
+  const tokens = tokenize(f.q), otherHits = f.q ? other.filter((x) => score(x, tokens) > 0).length : 0;
+  const switchBtn = otherHits ? `<button class="btn primary" data-switch>Show ${otherHits} matching ${otherNoun}</button>` : "";
+  if (onlySearch) return `<div class="empty"><h3>No ${noun} match “${esc(f.q)}”</h3>
+    <p>Try fewer or different words — for example what you want done (“summarise a PDF”) rather than a product name.${otherHits ? ` There ${otherHits === 1 ? "is" : "are"} ${otherHits} matching ${otherHits === 1 ? otherNoun.slice(0, -1) : otherNoun}, though.` : ""}</p>
+    <p>${switchBtn} <button class="btn" data-clear>Clear the search</button></p></div>`;
+  return `<div class="empty"><h3>Nothing matches all of that</h3><p>Your search and filters together hide every ${one}. Try turning off a filter${hiddenFilterCount() ? " under Filters &amp; sort" : ""}.</p>
+    <p><button class="btn primary" data-clear>Clear filters and show all ${noun}</button> ${switchBtn}</p></div>`;
+}
+function sourcesShown() {
+  const tokens = tokenize(f.q);
+  if (!tokens.length) return lib.sources;
+  return lib.sources.filter((s) => { const t = (s.repo + " " + (s.description || "")).toLowerCase(); return tokens.some((k) => t.includes(k)); });
+}
+function renderSources(list) {
+  $("#sources").innerHTML = !list.length ? `<div class="empty"><h3>No sources match “${esc(f.q)}”</h3><p><button class="btn" data-clear>Clear the search</button></p></div>`
+    : list.map((s) => `<div class="source">
     <img src="${esc(/^https:\/\/avatars\.githubusercontent\.com\//.test(s.avatar) ? s.avatar : "")}" alt="" loading="lazy">
     <div><h3>${esc(s.repo)}</h3><p>${esc(s.description)}</p>
     <div class="row"><span class="badge ${s.tier}" title="${TIER_HELP.skill[s.tier]}">${TIERS[s.tier]}</span><span>★ ${fmtNum(s.stars)}</span><span>${s.skills} skills</span>
-    <span>updated ${fmtDate(s.pushed_at)}</span><a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">Open on GitHub ↗</a></div></div></div>`).join("");
+    <span>updated ${fmtDate(s.pushed_at)}</span><a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">Open on GitHub ↗</a></div>
+    <p><button class="btn small" data-source="${esc(s.repo)}">See its ${s.skills} skill${s.skills === 1 ? "" : "s"} →</button></p></div></div>`).join("");
 }
 
 /* ---------- galaxy view ---------- */
@@ -257,14 +292,37 @@ function drawGalaxy(list) {
     const c = e.target.closest("circle");
     if (!c) return (tip.hidden = true);
     const s = nodes[+c.dataset.i].s, box = $("#galaxy").getBoundingClientRect();
-    tip.innerHTML = `<b>${esc(s.name)}</b>${esc(s.author)}${s.stars ? " · ★ " + fmtNum(s.stars) : ""}`;
+    tip.innerHTML = tipHtml(s);
     tip.hidden = false;
     tip.style.left = Math.min(box.width - 270, e.clientX - box.left + 14) + "px";
     tip.style.top = e.clientY - box.top + 14 + "px";
   };
-  svg.onmouseleave = () => (tip.hidden = true);
+  svg.onmouseleave = () => { if (document.activeElement !== svg) tip.hidden = true; };
   svg.onclick = (e) => { const c = e.target.closest("circle"); if (c) openItem(nodes[+c.dataset.i].s.id); };
+  // Keyboard: arrows walk the bubbles (grouped by category, then name), Enter opens.
+  const order = nodes.map((n, i) => i).sort((a, b) => Object.keys(CATS).indexOf(nodes[a].s.category) - Object.keys(CATS).indexOf(nodes[b].s.category) || nodes[a].s.name.localeCompare(nodes[b].s.name));
+  let k = -1;
+  const focusNode = () => {
+    circles.forEach((c) => c.classList.remove("kfocus"));
+    const n = nodes[order[k]], c = circles[order[k]];
+    c.classList.add("kfocus");
+    const box = $("#galaxy").getBoundingClientRect(), sb = svg.getBoundingClientRect(), sc = sb.width / W;
+    tip.innerHTML = tipHtml(n.s); tip.hidden = false;
+    tip.style.left = Math.min(box.width - 270, n.x * sc + 14) + "px";
+    tip.style.top = n.y * (sb.height / H) + 14 + "px";
+    $("#g-live").textContent = `${n.s.name}, ${CATS[n.s.category][0]}, ${k + 1} of ${order.length}`;
+  };
+  svg.onkeydown = (e) => {
+    if (!order.length) return;
+    if (["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) {
+      e.preventDefault();
+      k = k < 0 ? 0 : (k + (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1) + order.length) % order.length;
+      focusNode();
+    } else if (e.key === "Enter" && k >= 0) openItem(nodes[order[k]].s.id);
+  };
+  svg.onblur = () => { tip.hidden = true; circles.forEach((c) => c.classList.remove("kfocus")); };
 }
+const tipHtml = (s) => `<b>${esc(s.name)}</b>${esc(s.author)}${s.tier === "official" ? " · Official" : ""}${s.stars ? " · ★ " + fmtNum(s.stars) : ""}`;
 
 /* ---------- shared detail helpers ---------- */
 function md(text) {
@@ -291,33 +349,55 @@ const miniList = (list, empty) => list.length
       <span>${x.kind === "tool" ? "🔌" : CATS[x.category][1]}</span><b>${esc(x.name)}</b><small>${esc(x.author)}</small></button>`).join("")}</div>`
   : `<p class="note">${empty}</p>`;
 
+let returnFocus = null;
 function showSheet(item, html) {
   const sheet = $(".sheet");
+  if ($("#modal").hidden) returnFocus = document.activeElement;   // where to put focus back on close
   sheet.style.setProperty("--c", `var(--c-${item.category})`);
   $("#m-body").innerHTML = html;
   $("#modal").hidden = false;
   document.body.style.overflow = "hidden";
   sheet.scrollTop = 0;
+  $("#m-name").focus({ preventScroll: true });
+  syncUrl(item.id);
 }
 function headHtml(s, glyph, badges) {
   return `<div class="m-head"><div class="glyph" style="--c:var(--c-${s.category})">${glyph}</div>
-      <div><h2 id="m-name">${esc(s.name)}</h2><div class="by">by ${esc(s.author)}${s.url ? ` · <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">view source ↗</a>` : ""}</div></div></div>
+      <div><h2 id="m-name" tabindex="-1">${esc(s.name)}</h2><div class="by">by ${esc(s.author)}${s.url ? ` · <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">view source ↗</a>` : ""}</div></div></div>
     <div class="m-badges">${s.is_new ? '<span class="badge new">New</span>' : ""}${badges}</div>`;
 }
+const shelfLabel = (on) => (on ? "♥ On my shelf" : "♡ Add to my shelf");
+const triedLabel = (on) => (on ? "✓ I’ve tried it" : "Mark as tried");
 function rateHtml(id) {
-  return `<div class="rate"><b>Your rating</b><span class="stars" id="m-stars"></span>
-      <button class="toggle ${user.favorites.includes(id) ? "on" : ""}" id="m-fav">♥ On my shelf</button>
-      <button class="toggle ${user.tried.includes(id) ? "on" : ""}" id="m-tried">✓ I’ve tried it</button></div>`;
+  const fav = user.favorites.includes(id), tried = user.tried.includes(id);
+  return `<div class="rate"><span id="m-rate-label">Your rating</span><span class="stars" id="m-stars" role="group" aria-labelledby="m-rate-label"></span>
+      <button class="toggle ${fav ? "on" : ""}" id="m-fav" aria-pressed="${fav}">${shelfLabel(fav)}</button>
+      <button class="toggle ${tried ? "on" : ""}" id="m-tried" aria-pressed="${tried}">${triedLabel(tried)}</button></div>`;
 }
-const notesHtml = (id) => `<div class="panel" data-p="notes" hidden>
+/* Sheet tabs: the first one listed is open. */
+const tabsHtml = (list) => `<div class="tabs" id="m-tabs" role="tablist" aria-label="About this item">${list.map(([k, l], i) =>
+  `<button role="tab" id="tab-${k}" data-t="${k}" aria-controls="p-${k}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}" class="${i === 0 ? "on" : ""}">${l}</button>`).join("")}</div>`;
+const panel = (k, html, open) => `<div class="panel" role="tabpanel" id="p-${k}" aria-labelledby="tab-${k}" data-p="${k}" ${open ? "" : "hidden"}>${html}</div>`;
+const notesHtml = (id) => panel("notes", `<label class="sr-only" for="m-note">My notes</label>
       <textarea id="m-note" placeholder="What worked, what didn’t, prompts worth remembering…">${esc(user.notes[id] || "")}</textarea>
-      <p class="note">Saved automatically in this browser only — nobody else can see it.</p></div>`;
-const platformSeg = (list) => `<div class="seg" id="m-platform" style="margin-bottom:14px">${list.map(([v, l]) => `<button data-v="${v}">${l}</button>`).join("")}</div><div id="m-invoke"></div>`;
+      <p class="note">Saved automatically in this browser only — nobody else can see it.</p>`);
+const platformSeg = (list) => `<p class="pick" id="m-pick">Set it up for:</p><div class="seg" id="m-platform" role="group" aria-labelledby="m-pick">${list.map(([v, l]) => `<button data-v="${v}" aria-pressed="false">${l}</button>`).join("")}</div><div id="m-invoke" aria-live="polite"></div>`;
+/* Remember the visitor's agent across sheets. Skills say "claude-app", tools "claude-desktop" for the same Claude app. */
+function pickPlatform(kind, fallback) {
+  let p = user.agent || fallback;
+  if (kind === "tool" && p === "claude-app") p = "claude-desktop";
+  if (kind !== "tool" && p === "claude-desktop") p = "claude-app";
+  return p;
+}
+function rememberPlatform(p) {
+  const v = p === "claude-desktop" ? "claude-app" : p;
+  if (user.agent !== v) { user.agent = v; saveUser(); }
+}
 
 /* Wires up the parts every detail sheet shares. extra(e) handles sheet-specific clicks. */
 function wireSheet(id, setPlatform, extra) {
   const drawStars = () => ($("#m-stars").innerHTML = [1, 2, 3, 4, 5].map((n) =>
-    `<button data-n="${n}" class="${(user.ratings[id] || 0) >= n ? "on" : ""}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join(""));
+    `<button data-n="${n}" class="${(user.ratings[id] || 0) >= n ? "on" : ""}" aria-pressed="${(user.ratings[id] || 0) === n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join(""));
   drawStars();
   $("#m-body").onclick = async (e) => {
     const t = e.target.closest("button,a") || e.target;
@@ -325,19 +405,33 @@ function wireSheet(id, setPlatform, extra) {
     else if (t.id === "m-fav" || t.id === "m-tried") {
       const key = t.id === "m-fav" ? "favorites" : "tried";
       user[key] = user[key].includes(id) ? user[key].filter((x) => x !== id) : [...user[key], id];
-      t.classList.toggle("on"); saveUser(); render();
-    } else if (t.dataset.t) {
-      document.querySelectorAll("#m-tabs button").forEach((b) => b.classList.toggle("on", b === t));
-      document.querySelectorAll(".panel").forEach((p) => (p.hidden = p.dataset.p !== t.dataset.t));
-    } else if (t.dataset.v && t.closest("#m-platform")) setPlatform(t.dataset.v);
+      const on = user[key].includes(id);
+      t.classList.toggle("on", on); t.setAttribute("aria-pressed", on);
+      t.textContent = key === "favorites" ? shelfLabel(on) : triedLabel(on);
+      saveUser(); render();
+    } else if (t.dataset.t) showTab(t);
+    else if (t.dataset.v && t.closest("#m-platform")) { setPlatform(t.dataset.v); rememberPlatform(t.dataset.v); }
     else if (t.dataset.open) openItem(t.dataset.open);
     else if (t.dataset.copy !== undefined) { await navigator.clipboard.writeText(t.dataset.copy); toast("Copied"); }
     else if (extra) extra(t);
+  };
+  $("#m-tabs").onkeydown = (e) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+    const tabs = [...document.querySelectorAll("#m-tabs [role=tab]")], i = tabs.indexOf(document.activeElement);
+    const next = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+    e.preventDefault(); showTab(tabs[next]); tabs[next].focus();
   };
   $("#m-note").oninput = (e) => {
     if (e.target.value.trim()) user.notes[id] = e.target.value; else delete user.notes[id];
     clearTimeout(wireSheet.t); wireSheet.t = setTimeout(saveUser, 600);
   };
+}
+function showTab(t) {
+  document.querySelectorAll("#m-tabs [role=tab]").forEach((b) => {
+    const on = b === t;
+    b.classList.toggle("on", on); b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1;
+  });
+  document.querySelectorAll(".panel").forEach((p) => (p.hidden = p.dataset.p !== t.dataset.t));
 }
 function openItem(id) {
   const x = byId(id);
@@ -458,52 +552,44 @@ function openSkill(s) {
   const id = s.id;
   const when = s.use_case && s.use_case !== s.summary ? s.use_case : "";
   const tools = (skillTools[id] || []).slice(0, 6);
+  const repoLink = `<a href="${esc(safeUrl("https://github.com/" + s.repo))}" target="_blank" rel="noopener">${esc(s.repo)} ↗</a>`;
   showSheet(s, headHtml(s, CATS[s.category][1], `
       <span class="badge ${s.tier}" title="${TIER_HELP.skill[s.tier]}">${TIERS[s.tier]}</span>
       <span class="badge cat" style="--c:var(--c-${s.category})">${CATS[s.category][0]}</span>
       <span class="badge">${ORIGINS[s.origin]}</span>
-      ${s.has_tests ? '<span class="badge" title="The skill folder includes test or eval files">✓ Includes tests</span>' : ""}
-      ${s.has_scripts ? '<span class="badge" title="The skill bundles runnable scripts">Bundles scripts</span>' : ""}`) + `
-    <p class="lead">${esc(s.summary)}</p>
-    <dl class="facts">
-      <div><dt>Author</dt><dd>${esc(s.author)}</dd></div>
-      <div><dt>Community rating</dt><dd>★ ${s.stars.toLocaleString()} <span class="note">GitHub stars</span></dd></div>
-      <div><dt>Collection built</dt><dd>${fmtDate(s.created)}</dd></div>
-      <div><dt>Last updated</dt><dd>${fmtDate(s.updated)}</dd></div>
-      <div><dt>Licence</dt><dd>${esc(s.license || "Not stated")} <span class="note">${s.open ? "· open" : "· see source"}</span></dd></div>
-      <div><dt>Source</dt><dd><a href="${esc(safeUrl("https://github.com/" + s.repo))}" target="_blank" rel="noopener">${esc(s.repo)} ↗</a></dd></div>
-    </dl>
+      ${s.has_tests ? '<span class="badge" title="The skill folder includes test or eval files">✓ Comes with tests</span>' : ""}
+      ${s.has_scripts ? '<span class="badge" title="The skill bundles programs your agent can run">Includes scripts</span>' : ""}`) + `
+    <p class="lead">${esc(window.skillBlurb ? skillBlurb(s) : s.summary)}</p>
+    <p class="meta">${s.stars ? `★ ${fmtNum(s.stars)} GitHub stars on the whole ${repoLink} collection` : `From ${repoLink}`}
+      · updated ${fmtDate(s.updated)} · licence ${esc(s.license || "not stated")}${s.open ? " (open)" : ""}</p>
     ${rateHtml(id)}
-    <div class="tabs" id="m-tabs"><button data-t="use" class="on">Use case</button><button data-t="invoke">How to use it</button><button data-t="inside">What’s inside</button><button data-t="notes">My notes</button></div>
-    <div class="panel" data-p="use">
-      <h4>When to reach for it</h4>
-      <div class="callout">${esc(when || "Reach for this when you need: " + s.summary)}</div>
-      <h4>What it does</h4><p>${esc(s.description)}</p>
-      ${tools.length ? `<h4>Works with these tools</h4>${miniList(tools)}<p class="note">Tools this skill mentions by name. Connect one to let your AI act on that service.</p>` : ""}
-      <h4>Try saying</h4>${cmd(`Use the ${s.name} skill to help me with this: `)}
-      <p class="note">The star count belongs to the whole source collection (${esc(s.repo)}), not this single skill. ${TIER_HELP.skill[s.tier]}</p>
-    </div>
-    <div class="panel" data-p="invoke" hidden>${platformSeg([["claude-code", "Claude Code"], ["claude-app", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]])}</div>
-    <div class="panel" data-p="inside" hidden></div>
+    ${tabsHtml([["invoke", "How to use it"], ["about", "About"], ["inside", "What’s inside"], ["notes", "My notes"]])}
+    ${panel("invoke", platformSeg([["claude-code", "Claude Code"], ["claude-app", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]]), true)}
+    ${panel("about", `
+      ${when && !s.description.includes(when) ? `<h3>When to reach for it</h3><p>${esc(when)}</p>` : ""}
+      <h3>In the author’s words</h3><p>${esc(s.description)}</p>
+      ${tools.length ? `<h3>Works with these tools</h3>${miniList(tools)}<p class="note">Tools this skill mentions by name. Connect one to let your AI act on that service.</p>` : ""}
+      <p class="note">The star count belongs to the whole source collection (${esc(s.repo)}), not this single skill. ${TIER_HELP.skill[s.tier]}</p>`)}
+    ${panel("inside", "")}
     ${notesHtml(id)}`);
 
-  const files = `<h4>Files in this skill (${(s.files || []).length})</h4><div class="files">${(s.files || []).map(esc).join("<br>")}</div>`;
+  const files = `<h3>Files in this skill (${(s.files || []).length})</h3><div class="files">${(s.files || []).map(esc).join("<br>")}</div>`;
   let body = null;
   const inside = document.querySelector('[data-p="inside"]');
   inside.innerHTML = '<p class="note">Loading…</p>';
   const detail = s.open
     ? fetch(rawUrl(s, "SKILL.md")).then((r) => (r.ok ? r.text() : Promise.reject())).then((t) => {
         body = stripFront(t);
-        inside.innerHTML = files + `<h4>SKILL.md — the instructions your agent reads</h4><div class="md">${md(body)}</div>
+        inside.innerHTML = files + `<h3>SKILL.md — the instructions your agent reads</h3><div class="md">${md(body)}</div>
           <p class="note">Shown from <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">the author’s repository</a> under the ${esc(s.license)} licence.</p>`;
       }).catch(() => (inside.innerHTML = files + `<p class="note">Couldn’t load the instructions from GitHub right now. <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">Read them on the author’s page ↗</a></p>`))
     : Promise.resolve(inside.innerHTML = files + `<p class="note">${licNote(s)} <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">Read the instructions on the author’s page ↗</a></p>`);
 
   const setPlatform = (p) => {
-    document.querySelectorAll("#m-platform button").forEach((b) => b.classList.toggle("on", b.dataset.v === p));
+    document.querySelectorAll("#m-platform button").forEach((b) => { b.classList.toggle("on", b.dataset.v === p); b.setAttribute("aria-pressed", b.dataset.v === p); });
     $("#m-invoke").innerHTML = invokeHtml(s, p);
   };
-  setPlatform(s.origin === "openai" ? "codex" : "claude-code");
+  setPlatform(pickPlatform("skill", s.origin === "openai" ? "codex" : "claude-code"));
 
   wireSheet(id, setPlatform, async (t) => {
     if (t.dataset.copymd !== undefined) {
@@ -519,7 +605,7 @@ const RUNTIMES = {
   npx: ["Node.js", "https://nodejs.org"], uvx: ["uv (a Python tool runner)", "https://docs.astral.sh/uv/"],
   docker: ["Docker Desktop", "https://www.docker.com/products/docker-desktop/"], dnx: [".NET 10 SDK", "https://dotnet.microsoft.com/download"],
 };
-const placeholder = (name) => `<your-${name.toLowerCase().replace(/_/g, "-")}>`;
+const placeholder = (name) => (/^authorization$/i.test(name) ? "Bearer <your-access-token>" : `<your-${name.toLowerCase().replace(/_/g, "-")}>`);
 const shq = (a) => (/[\s"<>|&]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a);
 
 /* Turn the registry entry into something we can write setup steps for. */
@@ -561,7 +647,7 @@ function runtimeNote(spec) {
 function keysNote(spec) {
   const keys = spec.kind === "remote" ? spec.headers : spec.kind === "local" ? spec.env : [];
   if (!keys.length) return "";
-  return `<p class="note">🔑 Replace each <code>&lt;your-…&gt;</code> placeholder with your own value (see the <b>Details</b> tab). Keep API keys private — paste them yourself; never share them in a chat.</p>`;
+  return `<p class="note">🔑 Replace each <code>&lt;your-…&gt;</code> placeholder with your own value — the <b>Details</b> tab says what each one is. An “access token” is a password-like key you create in that service’s settings. Keep API keys private — paste them yourself; never share them in a chat.</p>`;
 }
 
 function connectHtml(t, platform) {
@@ -579,7 +665,7 @@ function connectHtml(t, platform) {
       ? `claude mcp add --transport ${spec.transport} ${t.slug} ${spec.url}${spec.headers.map((h) => ` --header ${shq(h.name + ": " + placeholder(h.name))}`).join("")}`
       : `claude mcp add ${spec.env.map((e) => `--env ${shq(e.name + "=" + envValue(e))} `).join("")}${t.slug} -- ${[spec.command, ...spec.args].map(shq).join(" ")}`;
     return `<ol class="steps">
-      <li><b>Run this in a terminal</b> (PowerShell or Command Prompt):${cmd(line)}
+      <li><b>Run this in a terminal</b> (PowerShell on Windows, Terminal on Mac):${cmd(line)}
         <span class="note">Add <code>--scope user</code> after <code>add</code> to make it available in every project, not just the current folder.</span></li>
       <li><b>Check it’s connected:</b> start Claude Code and type ${cmd("/mcp")}${remote ? "If the tool asks you to sign in, Claude Code opens the sign-in page for you." : ""}</li>
       <li><b>Use it</b> by describing your task, e.g.${cmd(ask)}</li></ol>${remote ? "" : runtimeNote(spec)}${keysNote(spec)}`;
@@ -653,78 +739,100 @@ function detailsHtml(t) {
   const how = spec ? (spec.kind === "remote" ? `Runs online at <code>${esc(spec.url)}</code> — nothing to install.`
     : spec.kind === "mcpb" ? "Ships as a Claude Desktop extension (.mcpb)."
     : `Runs on your computer with <code>${esc(spec.command)}</code> (${esc(RUNTIMES[spec.command][0])}).`) : "See the source page.";
-  return `<h4>How it runs</h4><p>${how}</p>
-    <h4>Settings and keys</h4>${keyRows ? `<table class="keys"><tbody>${keyRows}</tbody></table>` : '<p class="note">None listed — it may ask you to sign in when you first connect.</p>'}
-    <h4>Links</h4><p class="links">
+  return `<h3>How it runs</h3><p>${how}</p>
+    <h3>Settings and keys</h3>${keyRows ? `<table class="keys"><tbody>${keyRows}</tbody></table>` : '<p class="note">None listed — it may ask you to sign in when you first connect.</p>'}
+    <h3>Links</h3><p class="links">
       ${t.repo_url ? `<a href="${esc(safeUrl(t.repo_url))}" target="_blank" rel="noopener">Source code ↗</a>` : ""}
       ${t.website ? `<a href="${esc(safeUrl(t.website))}" target="_blank" rel="noopener">Website ↗</a>` : ""}
       <span class="note">Registry name: <code>${esc(t.registry_name)}</code></span></p>
-    <h4>Safety</h4><p class="note">A tool is a program that can act on whatever you connect it to — your files, accounts or data. Only connect tools from publishers you trust, give them the narrowest access they need, and review what your AI does with them.</p>`;
+    <h3>Safety</h3><p class="note">A tool is a program that can act on whatever you connect it to — your files, accounts or data. Only connect tools from publishers you trust, give them the narrowest access they need, and review what your AI does with them.</p>`;
 }
 
 function openTool(t) {
   const id = t.id;
   const skills = (t.skills || []).map((sid) => lib.skills.find((s) => s.id === sid)).filter(Boolean);
   const spec = serverSpec(t);
+  const works = spec && spec.kind === "remote" ? "Claude, ChatGPT, Codex, Gemini, Copilot, Cursor and more" : "Claude Code, the Claude app, Codex, Gemini CLI, Copilot, Cursor and more";
   showSheet(t, headHtml(t, "🔌", `
       <span class="badge ${t.tier}" title="${TIER_HELP.tool[t.tier]}">${TIERS[t.tier]}</span>
       <span class="badge" title="The MCP Registry checked that the publisher controls this ${t.verified_by === "github" ? "GitHub account" : "domain"}">✓ ${t.verified_by === "github" ? "GitHub" : "Domain"} verified</span>
       <span class="badge cat" style="--c:var(--c-${t.category})">${CATS[t.category][0]}</span>
       <span class="badge ${t.is_remote ? "remote" : ""}">${t.is_remote ? "☁ Remote — no install" : "💻 Runs on your computer"}</span>`) + `
     <p class="lead">${esc(t.description)}</p>
-    <dl class="facts">
-      <div><dt>Publisher</dt><dd>${esc(t.author)}</dd></div>
-      <div><dt>Community rating</dt><dd>${t.stars ? `★ ${t.stars.toLocaleString()} <span class="note">GitHub stars</span>` : '<span class="note">No public star count</span>'}</dd></div>
-      <div><dt>Version</dt><dd>${esc(t.version || "—")}</dd></div>
-      <div><dt>This version published</dt><dd>${fmtDate(t.created)}</dd></div>
-      <div><dt>Works with</dt><dd>${spec && spec.kind === "remote" ? "Claude, ChatGPT, Codex, Gemini, Copilot, Cursor & more" : "Claude Code, Claude Desktop, Codex, Gemini CLI, Copilot, Cursor & more"}</dd></div>
-      <div><dt>Skills using it</dt><dd>${skills.length}</dd></div>
-    </dl>
+    <p class="meta">${t.stars ? `★ ${fmtNum(t.stars)} GitHub stars` : "No public star count"}${t.version ? ` · version ${esc(t.version)}` : ""} · published ${fmtDate(t.created)}${skills.length ? ` · used by ${skills.length} skill${skills.length === 1 ? "" : "s"}` : ""}</p>
     ${rateHtml(id)}
-    <div class="tabs" id="m-tabs"><button data-t="use" class="on">Use case</button><button data-t="invoke">How to connect</button><button data-t="inside">Details</button><button data-t="notes">My notes</button></div>
-    <div class="panel" data-p="use">
-      <h4>What it lets your AI do</h4>
-      <div class="callout">${esc(t.description)}</div>
-      <h4>Skills that use it</h4>
+    ${tabsHtml([["invoke", "How to connect"], ["about", "About"], ["inside", "Details"], ["notes", "My notes"]])}
+    ${panel("invoke", platformSeg([["claude-code", "Claude Code"], ["claude-desktop", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]]) +
+      `<p class="note">Works with ${works}.</p>`, true)}
+    ${panel("about", `
+      <h3>Skills that use it</h3>
       ${miniList(skills, "No skills in the café mention this tool by name yet. You can still use it on its own — just ask your AI.")}
-      <h4>Try saying</h4>${cmd(`Using the ${t.name} tool, `)}
-      <p class="note">${TIER_HELP.tool[t.tier]}${t.stars ? " The star count belongs to the tool’s source repository." : ""}</p>
-    </div>
-    <div class="panel" data-p="invoke" hidden>${platformSeg([["claude-code", "Claude Code"], ["claude-desktop", "Claude app"], ["chatgpt", "ChatGPT"], ["codex", "Codex"], ["gemini", "Gemini CLI"], ["copilot", "GitHub Copilot"], ["cursor", "Cursor"], ["other", "Other agents"]])}</div>
-    <div class="panel" data-p="inside" hidden>${detailsHtml(t)}</div>
+      <p class="note">${TIER_HELP.tool[t.tier]}${t.stars ? " The star count belongs to the tool’s source repository." : ""}</p>`)}
+    ${panel("inside", detailsHtml(t))}
     ${notesHtml(id)}`);
   const setPlatform = (p) => {
-    document.querySelectorAll("#m-platform button").forEach((b) => b.classList.toggle("on", b.dataset.v === p));
+    document.querySelectorAll("#m-platform button").forEach((b) => { b.classList.toggle("on", b.dataset.v === p); b.setAttribute("aria-pressed", b.dataset.v === p); });
     $("#m-invoke").innerHTML = connectHtml(t, p);
   };
-  setPlatform("claude-code");
+  setPlatform(pickPlatform("tool", "claude-code"));
   wireSheet(id, setPlatform);
 }
-function closeModal() { $("#modal").hidden = true; document.body.style.overflow = ""; }
+function closeModal() {
+  if ($("#modal").hidden) return;
+  $("#modal").hidden = true; document.body.style.overflow = "";
+  syncUrl(null);
+  const back = returnFocus && document.contains(returnFocus) ? returnFocus : $("#q");
+  back.focus({ preventScroll: true }); returnFocus = null;
+}
 
 ﻿
 /* ---------- events ---------- */
-function setView(v) {
-  f.view = v;
-  $("#view").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.v === v));
+const TOGGLES = [["#f-fav", "fav"], ["#f-new", "isNew"], ["#f-tests", "tests"], ["#f-remote", "remote"], ["#f-linked", "linked"]];
+function syncControls() {
+  [["#origin", "origin"], ["#tier", "tier"], ["#view", "view"]].forEach(([id, key]) =>
+    $(id).querySelectorAll("button").forEach((b) => { b.classList.toggle("on", b.dataset.v === f[key]); b.setAttribute("aria-pressed", b.dataset.v === f[key]); }));
+  TOGGLES.forEach(([id, key]) => { $(id).classList.toggle("on", !!f[key]); $(id).setAttribute("aria-pressed", !!f[key]); });
+  $("#sort").value = f.sort;
+}
+function setView(v) { f.view = v; syncControls(); }
+/* Keep the address bar in step with what's on screen, so a link (or a reload) brings you back here. */
+let openNow = null;
+function syncUrl(id) {
+  if (id !== undefined) openNow = id;
+  const u = new URLSearchParams();
+  if (mode === "tools") u.set("mode", "tools");
+  if (f.q) u.set("q", f.q);
+  if (f.cat !== "all") u.set("cat", f.cat);
+  if (f.repo && mode === "skills") u.set("source", f.repo);
+  if (f.origin !== "all" && mode === "skills") u.set("made", f.origin);
+  if (f.tier !== "all") u.set("tier", f.tier);
+  [["isNew", "new"], ["tests", "tests"], ["remote", "remote"], ["linked", "linked"]].forEach(([k, n]) => f[k] && u.set(n, "1"));
+  if (f.sort !== "popular") u.set("sort", f.sort);
+  if (f.view !== "cards") u.set("view", f.view);
+  if (openNow) u.set("open", openNow);
+  const qs = u.toString();
+  try { history.replaceState(null, "", location.pathname + (qs ? "?" + qs : "")); } catch { /* ignore */ }
 }
 function seg(id, key) {
   $(id).onclick = (e) => {
     const b = e.target.closest("button"); if (!b) return;
-    $(id).querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
-    f[key] = b.dataset.v; f.shown = PAGE; render();
+    f[key] = b.dataset.v; f.shown = PAGE; syncControls(); render();
   };
 }
 seg("#origin", "origin"); seg("#tier", "tier"); seg("#view", "view");
-[["#f-fav", "fav"], ["#f-new", "isNew"], ["#f-tests", "tests"], ["#f-remote", "remote"], ["#f-linked", "linked"]].forEach(([id, key]) =>
-  ($(id).onclick = () => { f[key] = !f[key]; $(id).classList.toggle("on", f[key]); f.shown = PAGE; render(); }));
+TOGGLES.forEach(([id, key]) => ($(id).onclick = () => { f[key] = !f[key]; f.shown = PAGE; syncControls(); render(); }));
+$("#filters-btn").onclick = () => {
+  const open = $("#filters").hidden;
+  $("#filters").hidden = !open; $("#filters-btn").setAttribute("aria-expanded", open);
+};
 $("#sort").onchange = (e) => { f.sort = e.target.value; render(); };
 $("#q").oninput = (e) => { f.q = e.target.value.trim(); f.shown = PAGE; clearTimeout(load.t); load.t = setTimeout(render, 120); };
-$("#cats").onclick = (e) => { const b = e.target.closest("[data-cat]"); if (!b) return; f.cat = b.dataset.cat; f.shown = PAGE; renderCats(); render(); };
+$("#cats").onclick = (e) => { const b = e.target.closest("[data-cat]"); if (!b) return; f.cat = b.dataset.cat; f.shown = PAGE; render(); };
 $("#more").onclick = () => { f.shown += PAGE; render(); };
 $("#mode").onclick = (e) => {
   const b = e.target.closest("button"); if (!b || b.dataset.v === mode) return;
-  mode = b.dataset.v; clearFilters(false); renderMode();
+  const q = f.q;                       // keep the visitor's search when switching between skills and tools
+  mode = b.dataset.v; clearFilters(false); f.q = q; $("#q").value = q; renderMode();
 };
 $("#grid").onclick = (e) => {
   const heart = e.target.closest("[data-fav]");
@@ -746,14 +854,31 @@ $("#surprise").onclick = () => {
 function clearFilters(rerender = true) {
   Object.assign(f, { q: "", cat: "all", repo: "", origin: "all", tier: "all", fav: false, isNew: false, tests: false, remote: false, linked: false, shown: PAGE });
   $("#q").value = "";
-  ["#origin", "#tier"].forEach((id) => $(id).querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === "all")));
-  ["#f-fav", "#f-new", "#f-tests", "#f-remote", "#f-linked"].forEach((id) => $(id).classList.remove("on"));
-  if (rerender) { renderCats(); render(); }
+  syncControls();
+  if (rerender) render();
 }
-document.addEventListener("click", (e) => { if (e.target.closest("[data-clear]")) clearFilters(); });
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-clear]")) clearFilters();
+  else if (e.target.closest("[data-switch]")) $(`#mode [data-v="${mode === "skills" ? "tools" : "skills"}"]`).click();
+  else if (e.target.closest("[data-source]")) {
+    const repo = e.target.closest("[data-source]").dataset.source;
+    clearFilters(false); f.repo = repo; setView("cards"); render(); window.scrollTo({ top: $("#count").offsetTop - 80 });
+  }
+});
 $("#m-close").onclick = closeModal;
 $("#modal").onclick = (e) => { if (e.target.id === "modal") closeModal(); };
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", (e) => {
+  if ($("#modal").hidden) return;
+  if (e.key === "Escape") return closeModal();
+  if (e.key !== "Tab") return;
+  // keep keyboard focus inside the open sheet
+  const els = [...$(".sheet").querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.offsetParent !== null);
+  if (!els.length) return;
+  const first = els[0], last = els[els.length - 1];
+  if (!$(".sheet").contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 
 /* ---------- site links (set in config.js) ---------- */
 const CFG = window.CAFE || {};
@@ -771,6 +896,12 @@ if (LINK.get("mode") === "tools") mode = "tools";
 if (LINK.get("q")) { f.q = LINK.get("q").slice(0, 100); $("#q").value = f.q; }
 if (CATS[LINK.get("cat")]) f.cat = LINK.get("cat");
 if (LINK.get("source")) f.repo = LINK.get("source").slice(0, 200);
+if (ORIGINS[LINK.get("made")]) f.origin = LINK.get("made");
+if (TIERS[LINK.get("tier")]) f.tier = LINK.get("tier");
+[["isNew", "new"], ["tests", "tests"], ["remote", "remote"], ["linked", "linked"]].forEach(([k, n]) => (f[k] = LINK.get(n) === "1"));
+if (["stars", "recent", "az", "mine"].includes(LINK.get("sort"))) f.sort = LINK.get("sort");
+if (["galaxy", "sources"].includes(LINK.get("view"))) f.view = LINK.get("view");
 
+if (hiddenFilterCount() || f.sort !== "popular") { $("#filters").hidden = false; $("#filters-btn").setAttribute("aria-expanded", "true"); }
 load().then(() => { if (LINK.get("open")) openItem(LINK.get("open")); })
   .catch(() => ($("#stats").textContent = "Couldn’t load the menu. Please refresh the page."));
