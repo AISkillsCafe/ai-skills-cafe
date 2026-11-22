@@ -30,7 +30,6 @@ function drawOrbit(sources) {
     <a class="sat" href="/menu?source=${encodeURIComponent(s.repo)}" title="${esc(s.repo)} — ${s.skills} skill${s.skills === 1 ? "" : "s"}">
       <img src="${esc(s.avatar)}&s=96" alt="" width="54" height="54" loading="lazy"><small>${esc(s.owner)}</small>
     </a>`).join("");
-  $("#orbit-note").textContent = `Circling the cup are ${picked.length} of the ${pool.length} people and teams whose skills are on our menu — a new mix every visit. Tap one to see their skills.`;
   spin($("#orbit-stage"), [...orbit.children]);
 }
 
@@ -39,12 +38,15 @@ function spin(stage, sats) {
   const PERIOD = 70000;                                // ms per lap
   const still = matchMedia("(prefers-reduced-motion: reduce)");
   const back = $("#track-back"), front = $("#track-front");
-  let angle = 0, last = performance.now(), paused = false;
-  const hold = (v) => () => (paused = v);
-  stage.addEventListener("pointerenter", hold(true));
-  stage.addEventListener("pointerleave", hold(false));
-  stage.addEventListener("focusin", hold(true));
-  stage.addEventListener("focusout", hold(false));
+  let angle = 0, last = performance.now(), paused = false, resume = 0, running = false;
+  // Pause while pointed at or focused. A touch has no hover, so after a tap the ring stays still a few seconds.
+  const hold = () => { clearTimeout(resume); paused = true; };
+  const release = (e) => { clearTimeout(resume); resume = setTimeout(() => (paused = false), e && e.pointerType === "touch" ? 4000 : 0); };
+  stage.addEventListener("pointerenter", hold);
+  stage.addEventListener("pointerdown", hold);
+  stage.addEventListener("pointerleave", release);
+  stage.addEventListener("focusin", hold);
+  stage.addEventListener("focusout", release);
 
   function place() {
     const w = stage.clientWidth, h = stage.clientHeight;
@@ -63,13 +65,17 @@ function spin(stage, sats) {
     });
   }
   function frame(now) {
-    if (!paused && !still.matches) angle = (angle + ((now - last) / PERIOD) * 2 * Math.PI) % (2 * Math.PI);
+    if (still.matches) { running = false; place(); return; }   // reduced motion: draw once, no loop
+    if (!paused) angle = (angle + ((now - last) / PERIOD) * 2 * Math.PI) % (2 * Math.PI);
     last = now;
     place();
     requestAnimationFrame(frame);
   }
+  const go = () => { if (!running) { running = true; last = performance.now(); requestAnimationFrame(frame); } };
+  still.addEventListener("change", go);
+  addEventListener("resize", () => still.matches && place());
   angle = Math.PI / 2 - Math.PI / sats.length;          // start with a picture front and centre
-  requestAnimationFrame(frame);
+  go();
 }
 
 function drawSpecials(skills) {
@@ -97,21 +103,29 @@ function drawCats(skills) {
 
 async function start() {
   const r = await fetch("/data/skills.json", { cache: "no-cache" });
-  const lib = r.ok ? await r.json() : {};
+  if (!r.ok) throw new Error(r.status);
+  const lib = await r.json();
   const skills = lib.skills || [], sources = lib.sources || [];
+  if (!skills.length) throw new Error("empty");
   drawOrbit(sources);
   drawSpecials(skills);
   drawCats(skills);
+  $("#specials-section").hidden = !$("#specials").children.length;   // sections appear only once they have something in them
+  $("#cats-section").hidden = !$("#home-cats").children.length;
 }
 
 /* Links set in config.js */
 const CFG = window.CAFE || {};
 document.querySelectorAll("[data-donate]").forEach((a) => {
-  if (/^https:\/\//.test(CFG.donateUrl || "")) a.href = CFG.donateUrl; else a.hidden = true;
+  if (/^https:\/\//.test(CFG.donateUrl || "")) a.href = CFG.donateUrl;
+  else { a.hidden = true; const box = a.closest(".support"); if (box) box.hidden = true; }
 });
 document.querySelectorAll("[data-removal]").forEach((a) => {
   if (/^https:\/\/github\.com\//.test(CFG.repoUrl || "")) a.href = CFG.repoUrl.replace(/\/$/, "") + "/issues/new?template=removal.yml";
   else a.hidden = true;
 });
 
-start().catch(() => ($("#orbit-note").textContent = "The menu is being restocked — please check back soon."));
+start().catch(() => {
+  $("#orbit-stage").hidden = true;
+  $("#orbit-note").innerHTML = 'We couldn’t load today’s makers. The full menu may still open — <a href="/menu">try the menu</a>, or refresh this page in a moment.';
+});

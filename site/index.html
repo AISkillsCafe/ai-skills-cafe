@@ -12,11 +12,12 @@
 <meta name="theme-color" content="#f6f3ec">
 <link rel="canonical" href="https://www.aiskillscafe.com/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=4">
+<link rel="stylesheet" href="/style.css?v=9">
 </head>
 <body class="home">
 <main>
   <section class="welcome">
+    <a class="skip" href="#see-menu">Skip to the menu button</a>
     <h1 class="tagline">
       <span class="sr-only">Be in the company of Great Thinkers</span>
       <svg class="arch" viewBox="0 0 600 185" aria-hidden="true">
@@ -55,38 +56,37 @@
         <text x="120" y="172" class="cup-text">Café</text>
       </svg>
       <svg class="track front" aria-hidden="true"><path id="track-front"/></svg>
-      <div class="orbit" id="orbit" aria-label="Some of the sources on our menu"></div>
+      <div class="orbit" id="orbit" role="group" aria-label="Makers featured on our menu"></div>
     </div>
     <p class="cup-caption">Free skills &amp; tools for every AI agent</p>
-    <p class="orbit-note" id="orbit-note">Circling the cup are a few of the people and teams whose skills are on our menu.</p>
+    <p class="orbit-note" id="orbit-note">Meet the makers behind the skills on our menu. Tap one to see their work.<br>A new mix is featured every visit.</p>
+    <p class="cta"><a class="btn big" id="see-menu" href="/menu">See the full menu →</a></p>
 
     <p class="lead-in">A free, hand-checked menu of <b>skills</b> (know-how your AI follows) and <b>tools</b> (services it can act on) from trusted sources — with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.</p>
-
-    <p><a class="btn big" href="/menu">See the full menu →</a></p>
   </section>
 
   <section class="home-section">
-    <h3>How it works</h3>
+    <h2>How it works</h2>
     <ol class="how">
-      <li><span>①</span><b>Find</b> a skill or tool by what you want done — search, browse categories, or press “Surprise me”.</li>
+      <li><span>①</span><b>Find</b> a skill or tool by what you want done — search, browse categories, or press “Surprise me” on the menu.</li>
       <li><span>②</span><b>Set it up</b> with copy-paste steps for your AI: Claude, ChatGPT, Codex, Gemini CLI, Copilot, Cursor and more.</li>
       <li><span>③</span><b>Just ask.</b> Your AI uses the skill when your request matches — no special commands needed.</li>
     </ol>
   </section>
 
-  <section class="home-section">
-    <h3>Today’s specials</h3>
+  <section class="home-section" id="specials-section" hidden>
+    <h2>Today’s specials</h2>
     <div class="specials" id="specials"></div>
   </section>
 
-  <section class="home-section">
-    <h3>Browse by craving</h3>
+  <section class="home-section" id="cats-section" hidden>
+    <h2>Browse by craving</h2>
     <div class="chips" id="home-cats"></div>
   </section>
 
   <section class="home-section support">
     <p>The café is free for everyone, with no sign-up. If it helps you, you can keep it brewing.</p>
-    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+    <a class="btn outline" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
   </section>
 </main>
 
@@ -99,6 +99,6 @@
   </nav>
 </footer>
 <script src="/config.js?v=4"></script>
-<script src="/home.js?v=4"></script>
+<script src="/home.js?v=7"></script>
 </body>
 </html>
