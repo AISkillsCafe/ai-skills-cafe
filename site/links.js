@@ -2,7 +2,8 @@
 (function () {
   var c = window.CAFE || {};
   document.querySelectorAll("[data-donate]").forEach(function (a) {
-    if (/^https:\/\//.test(c.donateUrl || "")) a.href = c.donateUrl; else a.hidden = true;
+    if (/^https:\/\//.test(c.donateUrl || "")) a.href = c.donateUrl;
+    else { a.hidden = true; var box = a.closest(".support"); if (box) box.hidden = true; }
   });
   document.querySelectorAll("[data-removal]").forEach(function (a) {
     if (/^https:\/\/github\.com\//.test(c.repoUrl || "")) a.href = c.repoUrl.replace(/\/$/, "") + "/issues/new?template=removal.yml";

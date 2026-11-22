@@ -6,63 +6,74 @@
 <title>About — AI Skills Café</title>
 <meta name="description" content="How AI Skills Café chooses skills and tools, how licences are handled, and how authors can ask for removal.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=13">
+<link rel="stylesheet" href="/style.css?v=19">
 </head>
 <body>
+<a class="skip" href="#main">Skip to the page</a>
 <header class="top">
   <a class="brand" href="/">
     <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><path d="M6 12h17v7a7 7 0 0 1-7 7h-3a7 7 0 0 1-7-7z" fill="currentColor"/><path d="M23 14h2.5a3.5 3.5 0 0 1 0 7H23" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M11 3c-1.5 2 1.5 3 0 6M16 3c-1.5 2 1.5 3 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".55"/></svg>
     <div><h1>AI Skills Café</h1><p>About</p></div>
   </a>
   <div class="top-actions">
-    <a class="btn ghost" href="/menu">← Back to the menu</a>
-    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+    <a class="btn ghost" href="/menu" aria-label="Back to the menu">←<span class="long"> Back to the menu</span></a>
+    <a class="btn primary" data-donate href="#" target="_blank" rel="noopener">☕ <span class="long">Buy me a coffee</span><span class="short">Donate</span></a>
   </div>
 </header>
 
-<main class="page">
-  <h2>A free menu of AI skills and tools</h2>
-  <p>AI Skills Café helps people find good <b>skills</b> (folders of instructions an AI agent follows, in the open <code>SKILL.md</code> format) and <b>tools</b> (MCP servers that let an agent act on a service like Notion, GitHub or a database), and shows how to set each one up in Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot, Cursor and other agents.</p>
-  <p>It’s free for everyone, with no sign-up. The menu refreshes automatically every night.</p>
+<main class="page" id="main">
+  <h2>How the café works</h2>
+  <p>AI Skills Café helps you find good <strong>skills</strong> and <strong>tools</strong> for your AI agent. A skill is a folder of instructions your agent follows (the open <code>SKILL.md</code> format). A tool is an MCP server: a small connector that lets your agent act on a service like Notion, GitHub or a database.</p>
+  <p>For each one we show how to set it up in Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot, Cursor and other agents. It’s free for everyone, with no sign-up, and the menu refreshes automatically every night.</p>
+  <nav class="toc" aria-label="On this page">
+    <a href="#how-we-choose">How we choose</a><a href="#licences">Credit and licences</a><a href="#privacy">Your privacy</a><a href="#removal">Removal or corrections</a><a href="#support">Support the café</a><a href="#affiliation">Not affiliated</a>
+  </nav>
 
-  <h3>How we choose</h3>
-  <table>
-    <tr><th>Label</th><th>Skills</th><th>Tools</th></tr>
-    <tr><td><b>Official</b></td><td>Published by the AI company or platform itself (for example Anthropic, OpenAI, Google, Vercel, Firebase).</td><td>Published under a well-known company’s verified domain or GitHub organisation in the official MCP Registry.</td></tr>
-    <tr><td><b>Trusted</b></td><td>Hand-picked, widely used community collections.</td><td>—</td></tr>
-    <tr><td><b>Popular</b></td><td>Found on GitHub with 2,000+ stars, an open-source licence and activity in the last year.</td><td>Community tools whose own GitHub repository has 300+ stars.</td></tr>
+  <h3 id="how-we-choose">How we choose</h3>
+  <table class="criteria">
+    <caption class="sr-only">How each label is earned, for skills and for tools</caption>
+    <tr class="criteria-head"><th scope="col">Label</th><th scope="col">Skills</th><th scope="col">Tools</th></tr>
+    <tr><th scope="row">Official</th><td data-label="Skills">Published by the AI company or platform itself (for example Anthropic, OpenAI, Google, Vercel, Firebase).</td><td data-label="Tools">Published under a well-known company’s verified domain or GitHub organisation in the official MCP Registry (the public list of MCP tools).</td></tr>
+    <tr><th scope="row">Trusted</th><td data-label="Skills">Hand-picked by the café: widely used community collections.</td><td data-label="Tools">Not used for tools.</td></tr>
+    <tr><th scope="row">Popular</th><td data-label="Skills">Found on GitHub with 2,000+ stars, an open-source licence and activity in the last year.</td><td data-label="Tools">Community tools whose own GitHub repository has 300+ stars.</td></tr>
   </table>
   <p>Star counts belong to the source repository, not to a single skill. Being listed is not an endorsement or a security review — please read what a skill or tool does before using it, and only connect tools you trust.</p>
 
-  <h3>Credit and licences</h3>
+  <h3 id="licences">Credit and licences</h3>
   <p>Every skill and tool belongs to its author. We show the author, link to the original source and display its licence.</p>
   <ul>
-    <li><b>Openly licensed skills</b> (MIT, Apache 2.0, BSD, ISC, CC BY, GPL and similar): you can read the instructions here and download a copy. Both come straight from the author’s GitHub repository, with the licence kept.</li>
-    <li><b>Everything else</b> (no licence stated, non-commercial, source-available or unclear terms): we show only a short description and send you to the author’s own page.</li>
+    <li><strong>Openly licensed skills</strong> (MIT, Apache 2.0, BSD, ISC, CC BY, GPL and similar): you can read the instructions here and download a copy. Both come straight from the author’s GitHub repository, with the licence kept.</li>
+    <li><strong>Everything else</strong> (no licence stated, non-commercial, source-available — meaning you can read it but not freely reuse it — or unclear terms): we show only a short description and send you to the author’s own page.</li>
   </ul>
 
-  <h3>Your privacy</h3>
+  <h3 id="privacy">Your privacy</h3>
   <p>There are no accounts, cookies or analytics. Your shelf, ratings and notes are saved only in your own browser and never sent to us. Clearing your browser data removes them.</p>
 
-  <h3>For authors: removal or corrections</h3>
-  <p>If you’d like your skill or tool removed, or something about it corrected, <a data-removal href="#" target="_blank" rel="noopener">send a removal request</a> and it will be handled promptly. Removed items stay off the menu.</p>
+  <h3 id="removal">For authors: removal or corrections</h3>
+  <p>If you made a skill or tool listed here and would like it removed or corrected, <a data-removal href="#" target="_blank" rel="noopener">open a removal request on GitHub ↗</a>. It’s a short form; you’ll need a free GitHub account, and requests are public, so please don’t include private details.</p>
+  <p>Requests are handled within 7 days, and removed items stay off the menu.</p>
 
-  <h3>Support the café</h3>
-  <p>The site is run independently and kept free so more people can learn. If it helped you, you can <a data-donate href="#" target="_blank" rel="noopener">buy me a coffee</a> ☕ — thank you!</p>
+  <h3 id="support">Support the café</h3>
+  <div class="support">
+    <p>The site is run independently and kept free so more people can learn. If it helped you, thank you for keeping it brewing.</p>
+    <a class="btn outline" data-donate href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+  </div>
 
-  <h3>Not affiliated</h3>
-  <p class="note">AI Skills Café is not affiliated with or endorsed by Anthropic, OpenAI, Google, Microsoft, GitHub, Anysphere (Cursor) or any listed author. Product names and trademarks belong to their owners.</p>
+  <h3 id="affiliation">Not affiliated</h3>
+  <p>AI Skills Café is not affiliated with or endorsed by Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Product names and trademarks belong to their owners.</p>
+
+  <p class="page-end"><a class="btn big" href="/menu">See the menu →</a></p>
 </main>
 
 <footer class="foot">
   <p class="disclaimer"><b>AI Skills Café</b> <i>is not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Sources shown are listed by us and do not endorse the café. Skills and tools belong to their authors — we list them, credit them and link to them.</i></p>
   <nav>
-    <a href="/about">About the Café and How We Choose</a>
+    <a href="/about#how-we-choose">About the Café and How We Choose</a>
     <a data-removal href="#" target="_blank" rel="noopener">Request Removal</a>
     <a data-donate href="#" target="_blank" rel="noopener">Support the Café</a>
   </nav>
 </footer>
 <script src="/config.js?v=4"></script>
-<script src="/links.js?v=4"></script>
+<script src="/links.js?v=5"></script>
 </body>
 </html>

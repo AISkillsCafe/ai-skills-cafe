@@ -6,7 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for getting in touch. Requests from authors are handled promptly.
+        Thanks for getting in touch, and sorry for any trouble. You didn't ask to be listed, so removal is simple:
+        requests from authors are handled within 7 days, and removed items stay off the menu.
         Please don't include private information — this page is public.
   - type: dropdown
     id: kind
@@ -27,11 +28,11 @@ body:
   - type: input
     id: source
     attributes:
-      label: Source link
-      description: The GitHub repository or registry page it comes from.
+      label: Source link (optional)
+      description: The GitHub repository or registry page it comes from, if you have it handy.
       placeholder: https://github.com/owner/repo
     validations:
-      required: true
+      required: false
   - type: textarea
     id: details
     attributes:
