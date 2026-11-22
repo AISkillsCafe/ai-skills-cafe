@@ -63,9 +63,11 @@ function loadUser() {
 
 /* ---------- loading ---------- */
 async function load() {
-  const [skills, tools] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({}))]);
+  const [skills, tools, builtins] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({})),
+    getJSON("/data/builtins.json").catch(() => ({}))]);
   user = Object.assign({ favorites: [], ratings: {}, notes: {}, tried: [] }, loadUser());
-  lib = { skills: skills.skills || [], sources: skills.sources || [], updated_at: skills.updated_at,
+  const extras = (builtins.items || []).filter((b) => b.id && b.name && CATS[b.category]);   // features built into an agent
+  lib = { skills: [...extras, ...(skills.skills || [])], sources: skills.sources || [], updated_at: skills.updated_at,
     tools: tools.tools || [], tools_updated_at: tools.updated_at, registry_entries: tools.registry_entries || 0 };
   for (const list of [lib.skills, lib.tools]) {
     const seen = {};
@@ -175,6 +177,7 @@ function cardHtml(s, i) {
     <div class="card-foot">
       ${s.is_new ? '<span class="badge new">New</span>' : ""}
       <span class="badge ${s.tier}">${TIERS[s.tier]}</span>
+      ${s.builtin ? `<span class="badge builtin" title="Comes with ${esc(s.builtin)} — nothing to download">Built in</span>` : ""}
       ${extra}
       ${s.stars ? `<span title="GitHub stars of the source repository">★ ${fmtNum(s.stars)}</span>` : ""}
       ${mine ? `<span class="mine" title="Your rating">${"★".repeat(mine)}</span>` : ""}
@@ -436,7 +439,30 @@ function showTab(t) {
 function openItem(id) {
   const x = byId(id);
   if (!x) return;
-  if (x.kind === "tool") openTool(x); else openSkill(x);
+  if (x.kind === "tool") openTool(x); else if (x.builtin) openBuiltin(x); else openSkill(x);
+}
+
+/* ---------- built-in feature detail (nothing to download: just steps) ---------- */
+function openBuiltin(s) {
+  const id = s.id, app = s.builtin;
+  const steps = (s.steps || []).map((st) => `<li>${esc(st.text)}${st.cmd ? cmd(st.cmd) : ""}</li>`).join("");
+  showSheet(s, headHtml(Object.assign({}, s, { url: "" }), CATS[s.category][1], `
+      <span class="badge ${s.tier}" title="${TIER_HELP.skill[s.tier]}">${TIERS[s.tier]}</span>
+      <span class="badge cat" style="--c:var(--c-${s.category})">${CATS[s.category][0]}</span>
+      <span class="badge builtin">Built into ${esc(app)}</span>`) + `
+    <p class="lead">${esc(s.summary)}</p>
+    <p class="meta">Comes with ${esc(app)}, by ${esc(s.author)} — nothing to download or install. <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">Official documentation ↗</a></p>
+    ${rateHtml(id)}
+    ${tabsHtml([["invoke", "How to use it"], ["about", "About"], ["notes", "My notes"]])}
+    ${panel("invoke", `<p class="pick">In ${esc(app)}:</p><ol class="steps">${steps}</ol>
+      ${(s.notes || []).map((n) => `<p class="note">${esc(n)}</p>`).join("")}
+      <p class="note">Only in ${esc(app)}. Other agents (ChatGPT, Gemini CLI, Copilot, Cursor) don’t have this feature.</p>`, true)}
+    ${panel("about", `
+      ${s.use_case ? `<h3>When to reach for it</h3><p>${esc(s.use_case)}</p>` : ""}
+      <h3>What it does</h3><p>${esc(s.description)}</p>
+      <p class="note">Built-in features are hand-picked by the café. Details come from ${esc(s.author)}’s documentation, linked above.</p>`)}
+    ${notesHtml(id)}`);
+  wireSheet(id, () => {});
 }
 
 /* ---------- skill detail ---------- */

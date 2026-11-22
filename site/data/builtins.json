@@ -1,0 +1,41 @@
+{
+  "_help": "Hand-picked features built into an AI agent (nothing to download). Edited by hand; the nightly build does not touch this file. Each item appears on the Skills menu with a 'Built in' badge and its own simple steps.",
+  "items": [
+    {
+      "id": "builtin::claude-code/advisor",
+      "name": "advisor",
+      "slug": "advisor",
+      "builtin": "Claude Code",
+      "summary": "Lets Claude ask a second, stronger AI model for advice during long or tricky tasks.",
+      "use_case": "Long, multi-step work where a second opinion saves time: big refactors, a bug that keeps coming back, or checking a plan before Claude commits to it. It adds little on short tasks.",
+      "description": "The advisor lets Claude consult a second, usually stronger model while it works, for example before committing to an approach, when it is stuck on a recurring error, or before declaring a task done. Claude decides when to ask; you only choose which model advises.",
+      "author": "Anthropic",
+      "repo": "",
+      "url": "https://code.claude.com/docs/en/advisor",
+      "tier": "official",
+      "origin": "claude",
+      "category": "workflow",
+      "stars": 0,
+      "created": "",
+      "updated": "",
+      "license": "",
+      "open": false,
+      "files": [],
+      "has_tests": false,
+      "has_scripts": false,
+      "is_new": false,
+      "steps": [
+        { "text": "Open Claude Code: in a terminal, the desktop app or Remote Control." },
+        { "text": "Type this, then pick a model from the list:", "cmd": "/advisor" },
+        { "text": "Or name the model straight away (opus, sonnet or fable):", "cmd": "/advisor opus" },
+        { "text": "Work as usual. Claude asks the advisor on its own when a second opinion helps." },
+        { "text": "To stop using it:", "cmd": "/advisor off" }
+      ],
+      "notes": [
+        "The advisor should be as strong as or stronger than the model doing the work — for example Sonnet working with Opus advising.",
+        "Advisor use counts toward your Claude plan’s usage limits, or is billed at the advisor model’s rates if you use an API key.",
+        "Works when Claude Code connects through Anthropic’s own plans or API (also Claude on AWS and Google Cloud); not through Amazon Bedrock or Microsoft Foundry."
+      ]
+    }
+  ]
+}
