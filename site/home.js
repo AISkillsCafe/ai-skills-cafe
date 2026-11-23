@@ -7,6 +7,35 @@ const CATS = {
 };
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const $ = (s) => document.querySelector(s);
+/* The headline: one of four café lines, picked at random on each visit (never the same twice in a row). */
+const HEADLINES = [
+  ["Stimulate Your Creativity", "with Rich AI Skills"],
+  ["Enhance Your Grind", "with Rich AI Skills"],
+  ["Amp Up Your Code", "with Robust AI Skills"],
+  ["Elevate Your Original Grind", "with a Shot of AI Skills"],
+];
+(function pickHeadline() {
+  let last = -1, i;
+  try { last = Number(localStorage.getItem("aiskillscafe.headline")); } catch (e) {}
+  do { i = Math.floor(Math.random() * HEADLINES.length); } while (i === last && HEADLINES.length > 1);
+  try { localStorage.setItem("aiskillscafe.headline", String(i)); } catch (e) {}
+  const [top, em] = HEADLINES[i];
+  const sr = document.getElementById("tagline-text");
+  if (sr) sr.textContent = top + " " + em;
+  // shrink a line's type only when it's too long for its curve
+  [["arch-top", top, "arch-outer"], ["arch-em", em, "arch-inner"]].forEach(([id, text, pathId]) => {
+    const tp = document.getElementById(id), path = document.getElementById(pathId);
+    if (!tp || !path) return;
+    tp.textContent = text;
+    const t = tp.parentNode;
+    t.style.fontSize = "";
+    try {
+      const room = path.getTotalLength() * 0.97, need = t.getComputedTextLength();
+      if (need > room) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / need).toFixed(1) + "px";
+    } catch (e) {}
+  });
+})();
+
 const AVATAR = /^https:\/\/avatars\.githubusercontent\.com\/[^\s"'<>]+$/;
 
 function shuffle(list, rand = Math.random) {
@@ -127,5 +156,5 @@ document.querySelectorAll("[data-removal]").forEach((a) => {
 
 start().catch(() => {
   $("#orbit-stage").hidden = true;
-  $("#orbit-note").innerHTML = 'We couldn’t load today’s makers. The full menu may still open — <a href="/menu">try the menu</a>, or refresh this page in a moment.';
+  $("#orbit-note").innerHTML = 'We couldn’t load today’s creators. The full menu may still open — <a href="/menu">try the menu</a>, or refresh this page in a moment.';
 });

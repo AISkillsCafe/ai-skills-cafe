@@ -4,27 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Skills Café — free skills and tools for Claude, ChatGPT, Gemini & more</title>
-<meta name="description" content="Be in the company of great thinkers. A free, curated menu of AI agent skills and tools from trusted sources, with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.">
-<meta property="og:title" content="AI Skills Café — be in the company of great thinkers">
+<meta name="description" content="Stimulate your creativity with rich AI skills. A free, curated menu of AI agent skills and tools from trusted sources, with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.">
+<meta property="og:title" content="AI Skills Café — stimulate your creativity with rich AI skills">
 <meta property="og:description" content="A free, curated menu of AI agent skills and tools, with setup steps for every major AI agent.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.aiskillscafe.com/">
 <meta name="theme-color" content="#f6f3ec">
 <link rel="canonical" href="https://www.aiskillscafe.com/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/style.css?v=21">
+<link rel="stylesheet" href="/style.css?v=22">
 </head>
 <body class="home">
 <main>
   <section class="welcome">
     <a class="skip" href="#see-menu">Skip to the menu button</a>
     <h1 class="tagline">
-      <span class="sr-only">Be in the company of Great Thinkers</span>
+      <span class="sr-only" id="tagline-text">Stimulate Your Creativity with Rich AI Skills</span>
       <svg class="arch" viewBox="0 0 600 185" aria-hidden="true">
         <path id="arch-outer" d="M 20 102.7 A 940 940 0 0 1 580 102.7" fill="none"/>
         <path id="arch-inner" d="M 60 161.7 A 872 872 0 0 1 540 161.7" fill="none"/>
-        <text class="arch-top"><textPath href="#arch-outer" startOffset="50%" text-anchor="middle">Be in the company of</textPath></text>
-        <text class="arch-em"><textPath href="#arch-inner" startOffset="50%" text-anchor="middle">Great Thinkers</textPath></text>
+        <text class="arch-top"><textPath href="#arch-outer" startOffset="50%" text-anchor="middle" id="arch-top">Stimulate Your Creativity</textPath></text>
+        <text class="arch-em"><textPath href="#arch-inner" startOffset="50%" text-anchor="middle" id="arch-em">with Rich AI Skills</textPath></text>
       </svg>
     </h1>
 
@@ -59,7 +59,7 @@
       <div class="orbit" id="orbit" role="group" aria-label="Makers featured on our menu"></div>
     </div>
     <p class="cup-caption">Free skills &amp; tools for every AI agent</p>
-    <p class="orbit-note" id="orbit-note">Meet the makers behind the skills on our menu. Tap one to see their work.<br>A new mix is featured every visit.</p>
+    <p class="orbit-note" id="orbit-note">Meet the creators behind the skills on our menu. Tap one to see their work.<br>A new mix is featured every visit.</p>
     <p class="cta"><a class="btn big" id="see-menu" href="/menu">See the full menu →</a></p>
 
     <p class="lead-in">A free, hand-checked menu of <b>skills</b> (know-how your AI follows) and <b>tools</b> (services it can act on) from trusted sources — with step-by-step setup for Claude, ChatGPT, Codex, Gemini CLI, GitHub Copilot and Cursor.</p>
@@ -95,10 +95,13 @@
   <nav>
     <a href="/about#how-we-choose">About the Café and How We Choose</a>
     <a data-removal href="#" target="_blank" rel="noopener">Request Removal</a>
+    <a data-feature href="#" target="_blank" rel="noopener">Request a Feature</a>
     <a data-donate href="#" target="_blank" rel="noopener">Support the Café</a>
   </nav>
+  <p class="visits" id="visits" hidden></p>
 </footer>
 <script src="/config.js?v=4"></script>
-<script src="/home.js?v=7"></script>
+<script src="/home.js?v=8"></script>
+<script src="/links.js?v=6"></script>
 </body>
 </html>

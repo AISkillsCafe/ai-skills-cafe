@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest something new for AI Skills Café, such as a feature, a skill or tool to add, or an improvement.
+title: "[Feature] "
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping the café grow! Every idea is read.
+        Please don't include private information, as this page is public.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of idea is it?
+      options:
+        - A new feature for the site
+        - A skill or tool to add to the menu
+        - An improvement to something that's already here
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would you like, and how would it help you?
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link (optional)
+      description: For a skill or tool, the GitHub repository or registry page it comes from.
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: false

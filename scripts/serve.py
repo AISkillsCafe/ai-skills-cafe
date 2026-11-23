@@ -9,9 +9,31 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 SITE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "site")
 
 
+VISITORS = [1234]   # pretend count for the local preview; the real one lives on Cloudflare (worker/index.js)
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=SITE, **kw)
+
+    def visitors(self, add):
+        VISITORS[0] += add
+        body = ('{"visitors":%d}' % VISITORS[0]).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        if self.path.partition("?")[0] == "/api/visitors":
+            return self.visitors(0)
+        return super().do_GET()
+
+    def do_POST(self):
+        if self.path.partition("?")[0] == "/api/visitors":
+            return self.visitors(1)
+        self.send_error(405)
 
     def send_head(self):
         path, _, query = self.path.partition("?")
