@@ -3,7 +3,7 @@
 Run:  python scripts/build.py            (GitHub Actions runs this nightly)
       python scripts/build.py --seed DIR (first run: reuse a local Skill Atlas data folder)
 
-Writes site/data/skills.json and site/data/tools.json. Skill instructions are NOT
+Writes site/data/skills.json and site/data/tools.json, then the skill/tool pages and sitemap (pages.py). Skill instructions are NOT
 stored here: visitors' browsers read them straight from the author's GitHub repo,
 and only for openly licensed skills.
 """
@@ -14,6 +14,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import pages  # noqa: E402
 import tools_updater  # noqa: E402
 import updater  # noqa: E402
 
@@ -142,6 +143,7 @@ def main():
         % (len(library["skills"]), opened, len(tools.get("tools", [])), summary["added"], tsum.get("added", 0)), 100)
     if summary.get("rate_limited"):
         log("Note: GitHub rate limit was reached; some sources kept their previous data.")
+    pages.main()   # one page per skill and tool, plus the sitemap, for search engines
 
 
 if __name__ == "__main__":
