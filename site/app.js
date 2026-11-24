@@ -40,6 +40,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const fmtNum = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, "") + "k" : String(n));
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "—");
 const safeUrl = (u) => (/^https:\/\/[^\s"'<>]+$/.test(u || "") ? u : "#");
+const repoLabel = (u) => ({ "github.com": "GitHub page", "gitlab.com": "GitLab page", "bitbucket.org": "Bitbucket page" })[
+  (String(u || "").match(/^https:\/\/(?:www\.)?([^/]+)/) || [])[1]] || "Code page";
 const items = () => (mode === "skills" ? lib.skills : lib.tools);
 const byId = (id) => lib.skills.find((s) => s.id === id) || lib.tools.find((t) => t.id === id);
 
@@ -383,7 +385,7 @@ function showSheet(item, html) {
 }
 function headHtml(s, glyph, badges) {
   return `<div class="m-head"><div class="glyph" style="--c:var(--c-${s.category})">${glyph}</div>
-      <div><h2 id="m-name" tabindex="-1">${esc(s.name)}</h2><div class="by">by ${esc(s.author)}${s.url ? ` · <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">view source ↗</a>` : ""}</div></div></div>
+      <div><h2 id="m-name" tabindex="-1">${esc(s.name)}</h2><div class="by">by ${esc(s.author)}${s.url ? ` · <a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">${s.kind === "tool" ? (s.url === s.repo_url ? repoLabel(s.url) : "website") : "view source"} ↗</a>` : ""}</div></div></div>
     <div class="m-badges">${s.is_new ? '<span class="badge new">New</span>' : ""}${badges}</div>`;
 }
 const shelfLabel = (on) => (on ? "♥ On my shelf" : "♡ Add to my shelf");
@@ -698,11 +700,12 @@ function keysNote(spec) {
 
 function connectHtml(t, platform) {
   const spec = serverSpec(t);
-  if (!spec) return `<p>This tool doesn’t publish a standard way to connect it automatically. Follow the setup instructions on its <a href="${esc(safeUrl(t.url || t.website))}" target="_blank" rel="noopener">source page ↗</a>.</p>`;
+  if (!spec) return `<p>This tool doesn’t publish a standard way to connect it automatically. ${t.url || t.website
+    ? `Follow the setup instructions on its <a href="${esc(safeUrl(t.url || t.website))}" target="_blank" rel="noopener">publisher’s page ↗</a>.` : "Ask its publisher how to connect it."}</p>`;
   const ask = `Using the ${t.name} tool, `;
   if (spec.kind === "mcpb") {
     return `<ol class="steps"><li><b>Download the extension file</b> (.mcpb) from <a href="${esc(safeUrl(spec.url))}" target="_blank" rel="noopener">here ↗</a>.</li>
-      <li><b>Double-click it</b> — Claude Desktop opens it and asks you to confirm the install. ${platform === "claude-desktop" ? "" : "<span class=\"note\">This package format is made for Claude Desktop; other agents should use the source page’s instructions.</span>"}</li>
+      <li><b>Double-click it</b> — Claude Desktop opens it and asks you to confirm the install. ${platform === "claude-desktop" ? "" : "<span class=\"note\">This package format is made for Claude Desktop; other agents should use the publisher’s own instructions.</span>"}</li>
       <li><b>Try it:</b>${cmd(ask)}</li></ol>`;
   }
   const remote = spec.kind === "remote";
@@ -784,11 +787,11 @@ function detailsHtml(t) {
   const keyRows = keys.map((e) => `<tr><td><code>${esc(e.name)}</code></td><td>${e.required ? "Required" : "Optional"}${e.secret ? " · 🔒 secret" : ""}</td><td>${esc(e.description || "—")}</td></tr>`).join("");
   const how = spec ? (spec.kind === "remote" ? `Runs online at <code>${esc(spec.url)}</code> — nothing to install.`
     : spec.kind === "mcpb" ? "Ships as a Claude Desktop extension (.mcpb)."
-    : `Runs on your computer with <code>${esc(spec.command)}</code> (${esc(RUNTIMES[spec.command][0])}).`) : "See the source page.";
+    : `Runs on your computer with <code>${esc(spec.command)}</code> (${esc(RUNTIMES[spec.command][0])}).`) : "See the publisher’s page.";
   return `<h3>How it runs</h3><p>${how}</p>
     <h3>Settings and keys</h3>${keyRows ? `<table class="keys"><tbody>${keyRows}</tbody></table>` : '<p class="note">None listed — it may ask you to sign in when you first connect.</p>'}
     <h3>Links</h3><p class="links">
-      ${t.repo_url ? `<a href="${esc(safeUrl(t.repo_url))}" target="_blank" rel="noopener">Source code ↗</a>` : ""}
+      ${t.repo_url ? `<a href="${esc(safeUrl(t.repo_url))}" target="_blank" rel="noopener">${repoLabel(t.repo_url)} ↗</a>` : ""}
       ${t.website ? `<a href="${esc(safeUrl(t.website))}" target="_blank" rel="noopener">Website ↗</a>` : ""}
       <span class="note">Registry name: <code>${esc(t.registry_name)}</code></span></p>
     <h3>Safety</h3><p class="note">A tool is a program that can act on whatever you connect it to — your files, accounts or data. Only connect tools from publishers you trust, give them the narrowest access they need, and review what your AI does with them.</p>`;

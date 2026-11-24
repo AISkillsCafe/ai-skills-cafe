@@ -13,6 +13,8 @@ import json
 import os
 import re
 import sys
+import urllib.error
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -101,6 +103,47 @@ def keep_open_only(library, tools):
     return dropped
 
 
+def repo_is_public(url):
+    """True if the repository page is listed as public, False if not, None if we couldn't tell right now."""
+    rk = tools_updater.repo_key(url)
+    if rk:
+        try:
+            meta = updater.gh("/repos/" + rk)
+            return meta.get("private") is False and meta.get("visibility", "public") == "public"
+        except urllib.error.HTTPError as e:
+            if e.code in (404, 451):
+                return False
+        except Exception:
+            pass                                   # rate limited or offline: try the page itself
+    try:                                           # anyone can open a public page without signing in
+        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": updater.UA})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return 200 <= r.status < 300
+    except urllib.error.HTTPError as e:
+        return False if e.code in (401, 403, 404, 410, 451) else None
+    except Exception:
+        return None
+
+
+def check_tool_pages(tools, old_tools):
+    """Only link a tool's code page when it is listed as public; otherwise show no link at all."""
+    prev = {t.get("id"): t.get("repo_public") for t in (old_tools or {}).get("tools", [])}
+    todo = [t for t in tools if t.get("repo_url")]
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        verdicts = list(pool.map(lambda t: repo_is_public(t["repo_url"]), todo))
+    hidden = 0
+    for t, ok in zip(todo, verdicts):
+        if ok is None:
+            ok = bool(prev.get(t["id"]))           # couldn't check tonight: keep last night's answer
+        t["repo_public"] = ok
+        if not ok:
+            hidden += 1
+            if t.get("url") == t["repo_url"]:
+                t["url"] = t.get("website") or ""
+            t["repo_url"] = ""
+    return hidden
+
+
 def log(msg, pct=None):
     print(("[%3d%%] " % pct if pct is not None else "       ") + msg, flush=True)
 
@@ -165,6 +208,11 @@ def main():
     except Exception as e:  # keep yesterday's tools rather than failing the whole build
         log("Tools update failed: %s - keeping previous tools" % e)
         tools, tsum = old_tools, {}
+
+    if tools.get("tools"):
+        hidden = check_tool_pages(tools["tools"], old_tools)
+        if hidden:
+            log("No code link for %d tools: their page isn't listed as public." % hidden)
 
     for s in library["skills"]:
         d = details.get(s["id"]) or {}

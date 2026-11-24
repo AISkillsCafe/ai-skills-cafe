@@ -295,6 +295,11 @@ def needs_key(t):
     return bool(secrets)
 
 
+def repo_label(url):
+    host = re.sub(r"^https://(www\.)?([^/]+).*", r"\2", url or "").lower()
+    return {"github.com": "GitHub page", "gitlab.com": "GitLab page", "bitbucket.org": "Bitbucket page"}.get(host, "Code page")
+
+
 def tool_page(t, peers, skills_for, blend_job=None):
     cat_label, _ = CATS.get(t.get("category"), CATS["other"])
     path = "/tool/" + t["_page"]
@@ -304,7 +309,7 @@ def tool_page(t, peers, skills_for, blend_job=None):
     if safe_url(t.get("website")):
         links.append(f'<a href="{e(t["website"])}" target="_blank" rel="noopener">Website ↗</a>')
     if safe_url(t.get("repo_url")):
-        links.append(f'<a href="{e(t["repo_url"])}" target="_blank" rel="noopener">Source code ↗</a>')
+        links.append(f'<a href="{e(t["repo_url"])}" target="_blank" rel="noopener">{repo_label(t["repo_url"])} ↗</a>')
     meta = f'By <b>{e(t.get("author"))}</b>'
     if t.get("stars"):
         meta += f' · ★ {fmt_num(t["stars"])} GitHub stars'
