@@ -93,7 +93,6 @@
   <url><loc>https://www.aiskillscafe.com/skill/bigquery-optimization</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/bigquery-troubleshooting</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/bigquery-udfs</loc><lastmod>2026-11-23</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/biopython</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/bioservices</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/brainstorming-nexu-io</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/brainstorming-obra</loc><lastmod>2026-11-03</lastmod></url>
@@ -154,10 +153,8 @@
   <url><loc>https://www.aiskillscafe.com/skill/datamol</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/debugging-and-error-recovery</loc><lastmod>2026-11-18</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/deepchem</loc><lastmod>2026-11-23</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/deepspot-m</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/deeptools</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/define-goal</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/deploy-to-vercel</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/depmap</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/deprecation-and-migration</loc><lastmod>2026-11-18</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/design-taste-frontend</loc><lastmod>2026-11-22</lastmod></url>
@@ -169,7 +166,6 @@
   <url><loc>https://www.aiskillscafe.com/skill/dispatching-parallel-agents</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/dnanexus-integration</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/do</loc><lastmod>2026-11-23</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/doc-coauthoring</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/documentation-and-adrs</loc><lastmod>2026-11-18</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/docx</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/doubt-driven-development</loc><lastmod>2026-11-18</lastmod></url>
@@ -181,15 +177,7 @@
   <url><loc>https://www.aiskillscafe.com/skill/executing-plans</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/experimental-design</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/extension-to-functions-codebase</loc><lastmod>2026-11-09</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-code-connect-components</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-create-design-system-rules</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-create-new-file</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-generate-design</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-generate-library</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-heygen-com</loc><lastmod>2026-11-23</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-implement-design</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-openai</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/figma-use</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://www.aiskillscafe.com/skill/figma</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/finishing-a-development-branch</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/firebase-ai-logic-basics</loc><lastmod>2026-11-09</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/firebase-analytics</loc><lastmod>2026-11-09</lastmod></url>
@@ -336,19 +324,15 @@
   <url><loc>https://www.aiskillscafe.com/skill/using-agent-skills</loc><lastmod>2026-11-18</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/using-git-worktrees</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/using-superpowers</loc><lastmod>2026-11-03</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/vercel-cli-with-tokens</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/vercel-composition-patterns</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/vercel-deploy</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/vercel-optimize</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/vercel-react-best-practices</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/vercel-react-native-skills</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/vercel-react-view-transitions</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/verification-before-completion</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/web-artifacts-builder</loc><lastmod>2026-11-16</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/web-design-guidelines</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/webapp-testing</loc><lastmod>2026-11-16</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/winui-app</loc><lastmod>2026-10-28</lastmod></url>
-  <url><loc>https://www.aiskillscafe.com/skill/writing-guidelines</loc><lastmod>2026-11-20</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/writing-plans</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/writing-skills</loc><lastmod>2026-11-03</lastmod></url>
   <url><loc>https://www.aiskillscafe.com/skill/xcode-project-setup</loc><lastmod>2026-11-09</lastmod></url>

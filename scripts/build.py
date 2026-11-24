@@ -4,8 +4,10 @@ Run:  python scripts/build.py            (GitHub Actions runs this nightly)
       python scripts/build.py --seed DIR (first run: reuse a local Skill Atlas data folder)
 
 Writes site/data/skills.json and site/data/tools.json, then the skill/tool pages and sitemap (pages.py). Skill instructions are NOT
-stored here: visitors' browsers read them straight from the author's GitHub repo,
-and only for openly licensed skills.
+stored here: visitors' browsers read them straight from the author's GitHub repo.
+
+Only openly licensed skills are listed: if neither the skill nor its repository clearly names an open licence
+(including a LICENSE file inside the skill's own folder), the skill is left off the menu.
 """
 import json
 import os
@@ -47,6 +49,56 @@ def licence_info(raw):
         if re.search(pat, raw, re.I):
             return name, True
     return raw[:40], False
+
+
+MIT_TEXT = re.compile(r"permission is hereby granted, free of charge", re.I)
+LICENCE_FILE = re.compile(r"(licen[cs]e|copying)([._-][a-z0-9]+)?(\.(txt|md))?$", re.I)
+
+
+def licence_from_text(text):
+    """Name the licence in a LICENSE file's text -> (display name, is_open). Unclear counts as not open."""
+    head = re.sub(r"\s+", " ", text or "")[:1500]
+    if re.search(r"non-?commercial|polyform|proprietary", head, re.I):
+        return "Not open", False
+    for pat, name in OPEN:
+        if re.search(pat, head, re.I):
+            return name, True
+    if MIT_TEXT.search(head):
+        return "MIT", True
+    return "Not stated", False
+
+
+def read_folder_licences(skills):
+    """Skills whose own folder has a LICENSE file (e.g. "Complete terms in LICENSE.txt"): read it and use that licence."""
+    todo = []
+    for s in skills:
+        if s["open"]:
+            continue
+        own = [f for f in s.get("files") or [] if "/" not in f and LICENCE_FILE.match(f)]
+        if own and s.get("folder"):
+            todo.append((s, s["folder"] + "/" + own[0]))
+
+    def check(job):
+        s, path = job
+        return licence_from_text(updater.fetch_raw(s["repo"], s.get("branch", "main"), path) or "")
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for (s, _), (name, ok) in zip(todo, pool.map(check, todo)):
+            if ok:
+                s["license"], s["open"] = name, True
+    return sum(1 for s, _ in todo if s["open"])
+
+
+def keep_open_only(library, tools):
+    """Leave skills without a clear open licence off the menu, and tidy what pointed at them."""
+    dropped = [s for s in library["skills"] if not s["open"]]
+    library["skills"] = [s for s in library["skills"] if s["open"]]
+    keep = {s["id"] for s in library["skills"]}
+    for src in library["sources"]:
+        src["skills"] = sum(1 for s in library["skills"] if s["repo"] == src["repo"])
+    library["sources"] = [src for src in library["sources"] if src["skills"]]
+    for t in tools.get("tools") or []:
+        t["skills"] = [i for i in t.get("skills", []) if i in keep]
+    return dropped
 
 
 def log(msg, pct=None):
@@ -120,6 +172,12 @@ def main():
         s["folder"], s["branch"] = folder, d.get("branch", "main")
         s["files"] = [f[len(folder) + 1:] if folder else f for f in d.get("files", [])][:MAX_FILES]
         s["license"], s["open"] = licence_info(s.get("license"))
+    found = read_folder_licences(library["skills"])
+    if found:
+        log("Found an open licence file inside %d skill folders." % found)
+    dropped = keep_open_only(library, tools)
+    if dropped:
+        log("Left %d skills off the menu: no clear open licence." % len(dropped))
 
     # Honour removal requests: scripts/removed.json lists skill ids, repos ("owner/name")
     # or tool registry names that must never appear on the site.

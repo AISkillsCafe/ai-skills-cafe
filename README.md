@@ -10,7 +10,7 @@ Live site: https://www.aiskillscafe.com
 - `scripts/build.py` refreshes `site/data/skills.json` and `site/data/tools.json` from GitHub and the official MCP Registry.
 - `.github/workflows/update.yml` runs the build every night and commits the new data. Each commit makes Cloudflare Pages publish the update.
 - Visitors' shelves, ratings and notes are kept in their own browser (`localStorage`). Nothing is sent to a server.
-- Skill instructions and downloads are fetched by the visitor's browser straight from the author's GitHub repository, and only for openly licensed skills.
+- Only openly licensed skills are listed (skill, skill-folder LICENSE file or repository licence). Skill instructions and downloads are fetched by the visitor's browser straight from the author's GitHub repository.
 
 ## Common jobs
 
