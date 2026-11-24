@@ -3,7 +3,8 @@
 Run:  python scripts/pages.py     (build.py runs this automatically after the nightly update)
 
 Reads   site/data/skills.json, tools.json, builtins.json, skill_notes.json
-Writes  site/skill/<name>.html, site/tool/<name>.html, site/sitemap.xml
+Writes  site/skill/<name>.html, site/tool/<name>.html, site/tools/house-blend.html,
+        site/data/house_blend.json, site/sitemap.xml
 
 Visitors still use the menu: every page has a "See it on the menu" button that opens the same card.
 Licence rule is the same as the menu: pages only show the short description, never the skill's files.
@@ -19,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = os.path.join(ROOT, "site")
 DATA = os.path.join(SITE, "data")
 BASE = "https://www.aiskillscafe.com"
-CSS = "/style.css?v=23"
+CSS = "/style.css?v=24"
 
 CATS = {
     "docs": ("Documents & Office", "📄"), "code": ("Coding & Engineering", "🛠️"), "design": ("Design & Creative", "🎨"),
@@ -294,7 +295,7 @@ def needs_key(t):
     return bool(secrets)
 
 
-def tool_page(t, peers, skills_for):
+def tool_page(t, peers, skills_for, blend_job=None):
     cat_label, _ = CATS.get(t.get("category"), CATS["other"])
     path = "/tool/" + t["_page"]
     title = f"{t['name']} MCP tool by {t.get('author') or 'its author'}: connect it to your AI — AI Skills Café"
@@ -323,6 +324,7 @@ def tool_page(t, peers, skills_for):
             f'<p class="lead">{e(t.get("description") or t.get("summary"))}</p>',
             f'<p class="meta">{meta}</p>',
             f'<p class="item-cta"><a class="btn big" href="{e(menu_link(t))}">See it on the menu →</a></p>',
+            (f'<p class="note">☕ Part of the café’s <a href="{BLEND_PATH}">House Blend</a>: our pick for “{e(blend_job)}”.</p>' if blend_job else ""),
             '<h3>What is an MCP tool?</h3><p>An MCP server is a small connector that lets your AI agent act on a service, '
             f'like reading or updating things in {e(t["name"])}, instead of only talking about it.</p>',
             f'<h3>How to connect it</h3>{how}',
@@ -339,6 +341,76 @@ def tool_page(t, peers, skills_for):
         app["softwareVersion"] = t["version"]
     ld = {"@context": "https://schema.org", "@graph": [app, breadcrumb_ld("Tools", "/menu?mode=tools", t["name"], path)]}
     return path, page(title, desc, path, "\n".join(b for b in body if b), ld)
+
+
+# The House Blend: one well-known tool for each everyday job, shown at the top of the Tools menu.
+# For each job the first candidate still on the menu wins, so a tool that drops off is replaced by the next one.
+HOUSE_BLEND = [
+    ("Work on code", "Read and manage repositories, issues and pull requests.",
+     ["io.github.github/github-mcp-server"]),
+    ("Look up current docs", "Fetch up-to-date documentation, so code examples aren’t out of date.",
+     ["io.github.upstash/context7"]),
+    ("Use a web browser", "Open pages, click through them and test your own site.",
+     ["io.github.microsoft/playwright-mcp", "io.github.ChromeDevTools/chrome-devtools-mcp"]),
+    ("Search the web", "Find and read pages online, with sources.",
+     ["ai.exa/exa", "io.github.brave/brave-search-mcp-server", "io.github.firecrawl/firecrawl-mcp-server"]),
+    ("Notes and wikis", "Search, read and update your pages and databases.",
+     ["com.notion/mcp", "io.github.cyanheads/obsidian-mcp-server"]),
+    ("Tasks and tickets", "Find, create and update issues and projects.",
+     ["app.linear/linear", "com.atlassian/atlassian-mcp-server"]),
+    ("Design files", "Read frames and components to turn designs into code.",
+     ["com.figma.mcp/mcp", "io.github.GLips/Figma-Context-MCP"]),
+    ("Databases", "Look at tables and run queries on your own databases.",
+     ["io.github.googleapis/mcp-toolbox", "io.github.bytebase/dbhub"]),
+]
+BLEND_PATH = "/tools/house-blend"
+
+
+def house_blend(tools):
+    by_name = {t.get("registry_name"): t for t in tools}
+    picks = []
+    for job, what, names in HOUSE_BLEND:
+        t = next((by_name[n] for n in names if n in by_name), None)
+        if t:
+            picks.append((job, what, t))
+    return picks
+
+
+def blend_page(picks):
+    title = "Must-have MCP tools to start with: the House Blend — AI Skills Café"
+    desc = clip("A short list of well-known MCP tools for everyday jobs: code, docs, browsing, web search, notes, tasks, "
+                "design and databases, with free setup steps for Claude, ChatGPT, Cursor and more.")
+    rows = []
+    for job, what, t in picks:
+        where = "☁ Runs online" if t.get("is_remote") else "💻 Runs on your computer"
+        key = " · needs an access key" if needs_key(t) else ""
+        rows.append(f'<li><span class="blend-job">{e(job)}</span>'
+                    f'<a class="blend-name" href="/tool/{e(t["_page"])}">{e(t["name"])}</a>'
+                    f'<span class="blend-what">{e(what)}</span>'
+                    f'<span class="blend-by">By {e(t.get("author"))} · {e(TIERS.get(t.get("tier"), ""))} · {where}{key}</span>'
+                    f'<a class="btn small" href="{e(menu_link(t))}">Setup steps →</a></li>')
+    body = [crumbs("Tools", "/menu?mode=tools", "House Blend"),
+            '<h2 class="item-name">House Blend: popular tools to start with</h2>',
+            '<p class="lead">New to MCP tools and not sure where to begin? These are well-known tools for everyday jobs. '
+            'Pick the ones that match what you do; you don’t need all of them.</p>',
+            f'<ol class="blend-list">{"".join(rows)}</ol>',
+            '<h3>How we pick them</h3>'
+            '<p>The café chooses a handful of everyday jobs, then the best-known tool on the menu for each one, preferring tools '
+            'published by the company behind the service. If a tool leaves the menu, the next one in line takes its place. '
+            'Some of these services need an account, and some have paid plans; check with the service itself.</p>'
+            '<p>“Popular” is not a security review. Read what a tool can do before you connect it, and only connect tools '
+            'you trust: a connected tool can act on your behalf.</p>',
+            '<h3>What is an MCP tool?</h3><p>An MCP server is a small connector that lets your AI agent act on a service, '
+            'like opening a pull request or updating a Notion page, instead of only talking about it. '
+            'Each tool on the menu has copy-paste setup steps for Claude Code, the Claude app, ChatGPT, Codex, Gemini CLI, '
+            'GitHub Copilot and Cursor.</p>',
+            '<p class="item-cta"><a class="btn big" href="/menu?mode=tools">See all tools on the menu →</a></p>']
+    items = [{"@type": "ListItem", "position": i + 1, "name": t["name"], "url": BASE + "/tool/" + t["_page"]}
+             for i, (_, _, t) in enumerate(picks)]
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "ItemList", "name": "House Blend: popular MCP tools to start with", "itemListElement": items},
+        breadcrumb_ld("Tools", "/menu?mode=tools", "House Blend", BLEND_PATH)]}
+    return page(title, desc, BLEND_PATH, "\n".join(body), ld)
 
 
 def peers_of(item, pool, n=6):
@@ -374,6 +446,8 @@ def main():
         for sid in t.get("skills") or []:
             tools_for.setdefault(sid, []).append(t)
 
+    picks = house_blend(tools)
+    job_of = {t["id"]: job for job, _, t in picks}
     skill_pages, tool_pages, urls = {}, {}, []
     for s in skills:
         path, text = skill_page(s, peers_of(s, skills), tools_for.get(s["id"], [])[:6], notes)
@@ -381,21 +455,24 @@ def main():
         urls.append((path, (s.get("updated") or "")[:10]))
     for t in tools:
         linked = [by_id[i] for i in t.get("skills") or [] if i in by_id][:6]
-        path, text = tool_page(t, peers_of(t, tools), linked)
+        path, text = tool_page(t, peers_of(t, tools), linked, job_of.get(t["id"]))
         tool_pages[t["_page"]] = text
         urls.append((path, (t.get("updated") or "")[:10]))
     write_dir("skill", skill_pages)
     write_dir("tool", tool_pages)
+    write_dir("tools", {"house-blend": blend_page(picks)})
+    with open(os.path.join(DATA, "house_blend.json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"picks": [{"job": job, "note": what, "id": t["id"]} for job, what, t in picks]}, f, ensure_ascii=False, indent=1)
 
     today = (lib.get("updated_at") or "")[:10]
-    core = [("/", today), ("/menu", today), ("/about", "")]
+    core = [("/", today), ("/menu", today), (BLEND_PATH, today), ("/about", "")]
     rows = []
     for path, mod in core + sorted(urls):
         rows.append("  <url><loc>%s%s</loc>%s</url>" % (BASE, html.escape(path), "<lastmod>%s</lastmod>" % mod if re.match(r"\d{4}-\d\d-\d\d$", mod) else ""))
     with open(os.path.join(SITE, "sitemap.xml"), "w", encoding="utf-8", newline="\n") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 + "\n".join(rows) + "\n</urlset>\n")
-    print("Pages: %d skills, %d tools, sitemap with %d addresses." % (len(skill_pages), len(tool_pages), len(rows)))
+    print("Pages: %d skills, %d tools, House Blend with %d picks, sitemap with %d addresses." % (len(skill_pages), len(tool_pages), len(picks), len(rows)))
 
 
 if __name__ == "__main__":

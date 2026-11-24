@@ -1,0 +1,44 @@
+{
+ "picks": [
+  {
+   "job": "Work on code",
+   "note": "Read and manage repositories, issues and pull requests.",
+   "id": "tool::io.github.github/github-mcp-server"
+  },
+  {
+   "job": "Look up current docs",
+   "note": "Fetch up-to-date documentation, so code examples aren’t out of date.",
+   "id": "tool::io.github.upstash/context7"
+  },
+  {
+   "job": "Use a web browser",
+   "note": "Open pages, click through them and test your own site.",
+   "id": "tool::io.github.microsoft/playwright-mcp"
+  },
+  {
+   "job": "Search the web",
+   "note": "Find and read pages online, with sources.",
+   "id": "tool::ai.exa/exa"
+  },
+  {
+   "job": "Notes and wikis",
+   "note": "Search, read and update your pages and databases.",
+   "id": "tool::com.notion/mcp"
+  },
+  {
+   "job": "Tasks and tickets",
+   "note": "Find, create and update issues and projects.",
+   "id": "tool::app.linear/linear"
+  },
+  {
+   "job": "Design files",
+   "note": "Read frames and components to turn designs into code.",
+   "id": "tool::com.figma.mcp/mcp"
+  },
+  {
+   "job": "Databases",
+   "note": "Look at tables and run queries on your own databases.",
+   "id": "tool::io.github.googleapis/mcp-toolbox"
+  }
+ ]
+}

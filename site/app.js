@@ -32,6 +32,7 @@ const f = { q: "", cat: "all", repo: "", origin: "all", tier: "all", fav: false,
   sort: "popular", view: "cards", shown: PAGE };
 let current = [];
 let skillTools = {};
+let blend = [];       // House Blend picks for the Tools menu (site/data/house_blend.json)
 let skillNotes = {};   // hand-written setup notes by skill id or repo (site/data/skill_notes.json)
 
 const $ = (s) => document.querySelector(s);
@@ -64,8 +65,9 @@ function loadUser() {
 
 /* ---------- loading ---------- */
 async function load() {
-  const [skills, tools, builtins, notes] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({})),
-    getJSON("/data/builtins.json").catch(() => ({})), getJSON("/data/skill_notes.json").catch(() => ({}))]);
+  const [skills, tools, builtins, notes, picks] = await Promise.all([getJSON("/data/skills.json"), getJSON("/data/tools.json").catch(() => ({})),
+    getJSON("/data/builtins.json").catch(() => ({})), getJSON("/data/skill_notes.json").catch(() => ({})),
+    getJSON("/data/house_blend.json").catch(() => ({}))]);
   skillNotes = notes.notes || {};
   user = Object.assign({ favorites: [], ratings: {}, notes: {}, tried: [] }, loadUser());
   const extras = (builtins.items || []).filter((b) => b.id && b.name && CATS[b.category]);   // features built into an agent
@@ -75,6 +77,8 @@ async function load() {
     const seen = {};
     list.forEach((s) => (s._i = seen[s.author] = (seen[s.author] ?? -1) + 1));
   }
+  const toolById = Object.fromEntries(lib.tools.map((t) => [t.id, t]));
+  blend = (picks.picks || []).filter((p) => toolById[p.id]).map((p) => ({ ...p, tool: toolById[p.id] }));
   skillTools = {};
   lib.tools.forEach((t) => (t.skills || []).forEach((sid) => (skillTools[sid] = skillTools[sid] || []).push(t)));
   Object.values(skillTools).forEach((l) => l.sort((a, b) => RANK[a.tier] - RANK[b.tier] || b.stars - a.stars));
@@ -196,6 +200,7 @@ function render() {
   syncUrl();
   $("#fav-count").textContent = all.filter((s) => user.favorites.includes(s.id)).length || "";
   const active = activeFilters();
+  renderBlend(active);
   const clearBtn = active.length ? ` · filtered by ${esc(active.join(", "))} <button class="btn small" data-clear>Clear filters</button>` : "";
   const srcs = sourcesShown();
   $("#count").innerHTML = !all.length ? "" : f.view === "sources" ? `${srcs.length} of ${lib.sources.length} sources${f.q ? ` matching “${esc(f.q)}”` : ""}`
@@ -211,6 +216,16 @@ function render() {
     $("#more").textContent = `Show more (${current.length - f.shown} left)`;
   } else if (f.view === "galaxy") drawGalaxy(current);
   else renderSources(srcs);
+}
+/* House Blend: shown on the Tools menu until the visitor starts searching or filtering. */
+function renderBlend(active) {
+  const show = mode === "tools" && f.view === "cards" && !active.length && blend.length > 0;
+  $("#blend").hidden = !show;
+  if (!show || $("#blend-row").childElementCount) return;
+  $("#blend-row").innerHTML = blend.map(({ job, note, tool: t }) =>
+    `<button class="blend-item" data-open="${esc(t.id)}" style="--c:var(--c-${t.category})" title="${esc(note)}">
+      <span class="blend-job">${esc(job)}</span><b>${esc(t.name)}</b>
+      <small>${t.is_remote ? "☁ Remote" : "💻 Local"} · by ${esc(t.author)}</small></button>`).join("");
 }
 /* No results: say why, and offer the most likely way out. */
 function emptyHtml(all, noun, one, shelfEmpty, active) {
@@ -877,6 +892,7 @@ $("#grid").onclick = (e) => {
   }
   const card = e.target.closest(".card"); if (card) openItem(card.dataset.id);
 };
+$("#blend-row").onclick = (e) => { const b = e.target.closest("[data-open]"); if (b) openItem(b.dataset.open); };
 $("#grid").onkeydown = (e) => { if (e.key === "Enter" && e.target.classList.contains("card")) openItem(e.target.dataset.id); };
 $("#surprise").onclick = () => {
   const pool = current.length ? current : items();
