@@ -1,4 +1,6 @@
 {
   "_help": "Items listed here never appear on the site. Add a skill id (owner/repo::path/SKILL.md), a whole repository (owner/repo), or a tool's registry name (e.g. io.github.owner/server). The next nightly build removes them.",
-  "removed": []
+  "removed": [
+    "com.microsoft/esrp-oss-mcp-test"
+  ]
 }
