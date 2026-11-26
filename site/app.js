@@ -206,7 +206,8 @@ function render() {
   const clearBtn = active.length ? ` · filtered by ${esc(active.join(", "))} <button class="btn small" data-clear>Clear filters</button>` : "";
   const srcs = sourcesShown();
   $("#count").innerHTML = !all.length ? "" : f.view === "sources" ? `${srcs.length} of ${lib.sources.length} sources${f.q ? ` matching “${esc(f.q)}”` : ""}`
-    : `${current.length} of ${all.length} ${noun}${clearBtn}`;
+    : `${current.length} of ${all.length} ${noun}${f.view === "cards" && current.length
+      ? ` · <span class="hint" aria-hidden="true">Tap a card ${mode === "tools" ? "to connect it to your AI" : "for setup steps and details"}</span>` : ""}${clearBtn}`;
   $("#grid").hidden = f.view !== "cards";
   $("#galaxy").hidden = f.view !== "galaxy";
   $("#sources").hidden = f.view !== "sources";

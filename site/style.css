@@ -134,6 +134,7 @@ body[data-view="sources"] #cats, body[data-view="sources"] #filters-btn, body[da
 .toggle b { font-weight: 600; opacity: .7; }
 select { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 13px; }
 .count { color: var(--muted); font-size: 13px; margin: 8px 2px 12px; }
+.count .hint { color: var(--ink); font-weight: 600; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
 .card { --c: var(--c-other); position: relative; display: flex; flex-direction: column; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 16px 12px; cursor: pointer;

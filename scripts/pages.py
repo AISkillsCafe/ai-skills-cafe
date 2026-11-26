@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = os.path.join(ROOT, "site")
 DATA = os.path.join(SITE, "data")
 BASE = "https://www.aiskillscafe.com"
-CSS = "/style.css?v=24"
+CSS = "/style.css?v=25"
 
 CATS = {
     "docs": ("Documents & Office", "📄"), "code": ("Coding & Engineering", "🛠️"), "design": ("Design & Creative", "🎨"),
