@@ -158,7 +158,7 @@ def page(title, desc, path, body, ld):
 </main>
 
 <footer class="foot">
-  <p class="disclaimer"><b>AI Skills Café</b> <i>is not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Sources shown are listed by us and do not endorse the café. Skills and tools belong to their authors — we list them, credit them and link to them.</i></p>
+  <p class="disclaimer"><b>AI Skills Café</b> <i>is not affiliated with Anthropic, OpenAI, Google, GitHub, Cursor or any listed author. Sources shown are listed by us and do not endorse the café. Skills and tools are the property of their authors; we list, credit, and link them. AI Skills Café was built with assistance from Claude Opus 5.5 in Nov 2026.</i></p>
   <nav>
     <a href="/about#how-we-choose">About the Café and How We Choose</a>
     <a data-removal href="#" target="_blank" rel="noopener">Request Removal</a>
